@@ -1,5 +1,6 @@
 ﻿namespace Persistence;
 
-public class IRepository
+public interface IRepository
 {
+    
 }
