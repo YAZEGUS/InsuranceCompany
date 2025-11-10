@@ -1,7 +1,17 @@
 namespace Domain;
 
+/// <summary>
+/// Represents an insurance agent who sells policies.
+/// </summary>
 public class Agent : BaseEntity
 {
-    public string Name { get; set;  }
-    public decimal ComissionPercentage { get; set;  }
+    /// <summary>
+    /// The name of the agent.
+    /// </summary>
+    public string Name { get; set; }
+
+    /// <summary>
+    /// The commission percentage the agent earns on policies.
+    /// </summary>
+    public decimal CommissionPercentage { get; set; }
 }
