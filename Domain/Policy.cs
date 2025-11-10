@@ -1,24 +1,13 @@
 namespace Domain;
-public enum PolicyTypes
+
+public class Policy : BaseEntity
 {
-    CarInsurance,
-    MedicalInsurance,
-    PropertyInsurance,
-}
-public enum StatusTypes
-{
-    Active, 
-    Paused, 
-    Cancelled
-}
-public class Policy
-{
-    public int Id { get; }
-    public string PolicyNumber { get; }
-    public PolicyTypes PolicyType { get; }
-    public DateTime StartDate { get; }
-    public DateTime EndDate { get; }
-    public decimal CoverageAmount { get; }
-    public decimal Price { get; }
-    public StatusTypes Status { get;}
+    public string PolicyNumber { get; set; }
+    public PolicyTypes PolicyType { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public decimal CoverageAmount { get; set; }
+    public decimal Price { get; set; }
+    public StatusTypes Status { get; set; }
+    public int ClientId { get; set; }
 }

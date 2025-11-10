@@ -1,10 +1,10 @@
 namespace Domain;
 
-public class Claim
+public class Claim : BaseEntity
 {
-    public int Id { get; }
-    public DateTime Date { get; }
-    public string Description { get; }
-    public decimal PayoutAmount { get; }
+    public int PolicyId { get; set; }
+    public DateTime Date { get; set; }
+    public string Description { get; set; }
+    public decimal PayoutAmount { get; set; }
     
 }

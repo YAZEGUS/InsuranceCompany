@@ -1,8 +1,7 @@
 namespace Domain;
 
-public class Agent
+public class Agent : BaseEntity
 {
-    public int Id { get;}
-    public string Name { get;}
-    public decimal ComissionPercentage { get; }
+    public string Name { get; set;  }
+    public decimal ComissionPercentage { get; set;  }
 }

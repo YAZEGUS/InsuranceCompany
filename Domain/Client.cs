@@ -1,15 +1,8 @@
 namespace Domain;
 
-public class Client
+public class Client : BaseEntity
 {
-    public int Id { get;}
-    public string FullName { get;}
-    public string Email { get;}
-
-    public enum ClientTypes
-    {
-        Individual,
-        Company
-    };
-    public ClientTypes ClientType { get; }
+    public string FullName { get; set; }
+    public string Email { get; set; }
+    public ClientTypes ClientType { get; set; }
 }
