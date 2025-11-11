@@ -1,0 +1,339 @@
+
+Призначення:
+Це шар домену (Domain Layer) — тут зберігаються тільки сутності (класи, які описують об’єкти бізнесу).
+Жодної логіки, тільки дані.
+
+Тут розташовані такі файли:
+
+Client.cs — опис клієнта.
+
+Policy.cs — опис страхового поліса.
+
+Claim.cs — опис страхової події.
+
+Client.cs:
+namespace InsuranceCompany.Domain
+{
+    public class Client
+    {
+        public Guid Id { get; set; } = Guid.NewGuid(); 
+        public string Name { get; set; } 
+        public string Email { get; set; }
+        public string Phone { get; set; }
+        public string ClientType { get; set; }
+
+        // Додано на етапі 2:
+        public int PolicyCount { get; set; }     // Кількість оформлених клієнтом полісів
+        public decimal TotalPayouts { get; set; } // Загальна сума виплачених страхових відшкодувань
+    }
+}
+
+Пояснення:
+
+Guid Id = Guid.NewGuid() — генерує унікальний ідентифікатор клієнта автоматично.
+
+Name, Email, Phone, ClientType — основна інформація про клієнта.
+
+- PolicyCount — нове поле, яке рахує, скільки полісів має клієнт.
+
+- TotalPayouts — показує, скільки клієнт отримав страхових виплат.
+
+Загальне призначення змін:
+Тепер кожен клієнт має не тільки контактні дані, а й власну статистику.
+Ця статистика оновлюється автоматично при змінах у полісах або подіях (див. далі в BusinessLogic).
+
+Policy.cs
+namespace InsuranceCompany.Domain
+{
+    public class Policy
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid ClientId { get; set; } 
+        public string PolicyType { get; set; }
+        public decimal PremiumAmount { get; set; } 
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+
+        // 🟢 Додано на етапі 2:
+        public string Status { get; set; } = "Active"; 
+    }
+}
+
+Пояснення:
+
+PolicyType, PremiumAmount, StartDate, EndDate — базова інформація про поліс.
+
+Status — нове поле, яке зберігає поточний стан поліса (Active, Paused, Completed, Cancelled).
+
+Загальне призначення:
+Додавання статусу дозволяє відслідковувати життєвий цикл поліса — його активацію, завершення або скасування.
+
+Claim.cs
+namespace InsuranceCompany.Domain
+{
+    public class Claim
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid PolicyId { get; set; }
+        public DateTime Date { get; set; }
+        public string Description { get; set; }
+        public decimal Amount { get; set; }
+
+        // 🟢 Додано на етапі 2:
+        public string Status { get; set; } = "New"; 
+    }
+}
+
+Пояснення:
+
+PolicyId — ідентифікатор поліса, з яким пов’язана подія.
+
+Description, Amount — опис і сума виплати.
+
+Status — нове поле, яке визначає стадію обробки страхової події:
+"New", "InReview", "Approved", "Paid".
+
+Загальне призначення:
+Це дозволяє контролювати процес розгляду страхової події від створення до виплати.
+
+2. InsuranceCompany.Persistence
+
+Призначення:
+Рівень доступу до даних (Data Access Layer / Persistence Layer).
+Відповідає за збереження і зчитування сутностей з JSON-файлів.
+(Файл: JsonRepository.cs)
+
+На етапі 2 цей шар не змінювався, але став активніше використовуватись новими сервісами для оновлення статистики та статусів.
+
+3. InsuranceCompany.BusinessLogic
+
+Призначення:
+Рівень бізнес-логіки (Business Logic Layer).
+Тут міститься вся логіка роботи програми:
+оновлення даних, обробка подій, пошук, зв’язок між сутностями.
+
+ClientService.cs
+namespace InsuranceCompany.BusinessLogic
+{
+    public class ClientService
+    {
+        private readonly JsonRepository<Client> _clientRepository;
+        private readonly JsonRepository<Policy> _policyRepository;
+        private readonly JsonRepository<Claim> _claimRepository;
+
+        public ClientService(JsonRepository<Client> clientRepo,
+                             JsonRepository<Policy> policyRepo,
+                             JsonRepository<Claim> claimRepo)
+        {
+            _clientRepository = clientRepo;
+            _policyRepository = policyRepo;
+            _claimRepository = claimRepo;
+        }
+
+        // Додано на етапі 2:
+        public void UpdateClientStats(Guid clientId)
+        {
+            var client = _clientRepository.GetById(clientId);
+            if (client == null) return;
+
+            // підрахунок кількості полісів
+            var policies = _policyRepository.GetAll().Where(p => p.ClientId == clientId).ToList();
+            client.PolicyCount = policies.Count;
+
+            // підрахунок виплачених сум
+            var claims = _claimRepository.GetAll()
+                .Where(c => policies.Any(p => p.Id == c.PolicyId) && c.Status == "Paid")
+                .ToList();
+
+            client.TotalPayouts = claims.Sum(c => c.Amount);
+
+            _clientRepository.Update(client);
+        }
+    }
+}
+
+Пояснення рядків:
+
+GetById(clientId) — знаходить клієнта по ID.
+
+Where(p => p.ClientId == clientId) — вибирає всі поліси, що належать клієнту.
+
+client.PolicyCount = policies.Count; — зберігає кількість знайдених полісів.
+
+claims.Sum(c => c.Amount); — сумує всі виплати, статус яких “Paid”.
+
+Update(client) — зберігає зміни в clients.json.
+
+Загальне призначення:
+На етапі 2 додано метод, який автоматично оновлює статистику клієнта, коли змінюються поліси або страхові події.
+
+PolicyService.cs
+namespace InsuranceCompany.BusinessLogic
+{
+    public class PolicyService
+    {
+        private readonly JsonRepository<Policy> _policyRepository;
+        private readonly ClientService _clientService;
+
+        public PolicyService(JsonRepository<Policy> policyRepo, ClientService clientService)
+        {
+            _policyRepository = policyRepo;
+            _clientService = clientService;
+        }
+
+        // Додано на етапі 2:
+        public void ChangePolicyStatus(Guid policyId, string newStatus)
+        {
+            var policy = _policyRepository.GetById(policyId);
+            if (policy == null) return;
+
+            policy.Status = newStatus;
+            _policyRepository.Update(policy);
+
+            _clientService.UpdateClientStats(policy.ClientId);
+        }
+
+        // Додано на етапі 2:
+        public List<Policy> SearchPolicies(string policyType = null, string status = null,
+                                           Guid? clientId = null, decimal? min = null, decimal? max = null)
+        {
+            var result = _policyRepository.GetAll();
+
+            if (!string.IsNullOrEmpty(policyType))
+                result = result.Where(p => p.PolicyType.Equals(policyType, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            if (!string.IsNullOrEmpty(status))
+                result = result.Where(p => p.Status.Equals(status, StringComparison.OrdinalIgnoreCase)).ToList();
+
+            if (clientId != null)
+                result = result.Where(p => p.ClientId == clientId).ToList();
+
+            if (min != null)
+                result = result.Where(p => p.PremiumAmount >= min).ToList();
+
+            if (max != null)
+                result = result.Where(p => p.PremiumAmount <= max).ToList();
+
+            return result;
+        }
+    }
+}
+
+Пояснення:
+
+ChangePolicyStatus() — змінює статус поліса, наприклад “Active → Completed”.
+Після цього викликає UpdateClientStats(), щоб оновити дані клієнта.
+
+SearchPolicies() — універсальний пошук полісів по будь-якому набору параметрів (тип, статус, клієнт, сума).
+
+Загальне призначення:
+Розширено бізнес-логіку: тепер користувач може змінювати стан полісів і здійснювати гнучкий пошук.
+
+ClaimService.cs
+namespace InsuranceCompany.BusinessLogic
+{
+    public class ClaimService
+    {
+        private readonly JsonRepository<Claim> _claimRepository;
+        private readonly PolicyService _policyService;
+        private readonly ClientService _clientService;
+
+        public ClaimService(JsonRepository<Claim> claimRepo, PolicyService policyService, ClientService clientService)
+        {
+            _claimRepository = claimRepo;
+            _policyService = policyService;
+            _clientService = clientService;
+        }
+
+        // Додано на етапі 2:
+        public void ChangeClaimStatus(Guid claimId, string newStatus)
+        {
+            var claim = _claimRepository.GetById(claimId);
+            if (claim == null) return;
+
+            claim.Status = newStatus;
+            _claimRepository.Update(claim);
+
+            if (newStatus == "Paid")
+            {
+                var policy = _policyService.GetPolicyById(claim.PolicyId);
+                _clientService.UpdateClientStats(policy.ClientId);
+            }
+        }
+    }
+}
+
+Пояснення:
+
+ChangeClaimStatus() — змінює статус страхової події.
+
+Якщо статус "Paid", автоматично викликає оновлення статистики клієнта.
+
+Загальне призначення:
+На етапі 2 реалізовано взаємозв’язок між подіями, полісами та клієнтами.
+Система сама підраховує виплати без ручного втручання.
+
+4. InsuranceCompany.ConsoleUI
+
+Призначення:
+Рівень презентації (Presentation Layer) — взаємодія користувача через консоль.
+
+Program.cs (фрагмент)
+while (true)
+{
+    Console.WriteLine("\n=== Головне меню ===");
+    Console.WriteLine("1. Додати клієнта");
+    Console.WriteLine("2. Додати поліс");
+    Console.WriteLine("3. Зареєструвати страхову подію");
+    Console.WriteLine("4. Змінити статус поліса");  //  Додано на етапі 2
+    Console.WriteLine("5. Змінити статус події");  //  Додано на етапі 2
+    Console.WriteLine("6. Пошук полісів");         //  Додано на етапі 2
+    Console.WriteLine("0. Вихід");
+
+    var choice = Console.ReadLine();
+
+    switch (choice)
+    {
+        case "4":
+            Console.Write("Введіть ID поліса: ");
+            var policyId = Guid.Parse(Console.ReadLine());
+            Console.Write("Новий статус (Active/Paused/Completed/Cancelled): ");
+            var newStatus = Console.ReadLine();
+            policyService.ChangePolicyStatus(policyId, newStatus);
+            break;
+
+        case "5":
+            Console.Write("Введіть ID події: ");
+            var claimId = Guid.Parse(Console.ReadLine());
+            Console.Write("Новий статус (New/InReview/Approved/Paid): ");
+            var claimStatus = Console.ReadLine();
+            claimService.ChangeClaimStatus(claimId, claimStatus);
+            break;
+
+        case "6":
+            Console.Write("Тип страхування (або Enter для всіх): ");
+            var type = Console.ReadLine();
+            var found = policyService.SearchPolicies(type);
+            foreach (var p in found)
+                Console.WriteLine($"{p.Id} | {p.PolicyType} | {p.PremiumAmount} | {p.Status}");
+            break;
+    }
+}
+
+
+Загальне призначення:
+На етапі 2 додано нові функції у меню:
+зміна статусів полісів,
+зміна статусів подій,
+пошук полісів.
+Це дозволило зробити систему інтерактивною і повноцінною для користувача.
+
+Підсумок змін етапу 2
+Компонент	Додано / Змінено	Призначення
+Client.cs	 PolicyCount, TotalPayouts	Зберігання статистики клієнта
+Policy.cs	 Status	Відстеження стану поліса
+Claim.cs	 Status	Контроль стадії обробки подій
+ClientService.cs	 UpdateClientStats()	Автоматичне оновлення статистики
+PolicyService.cs	 ChangePolicyStatus(), SearchPolicies()	Керування статусами і пошук
+ClaimService.cs	 ChangeClaimStatus()	Взаємозв’язок між подіями і клієнтами
+Program.cs	 Нові пункти меню	Інтерактивна робота через консоль
