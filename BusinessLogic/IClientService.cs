@@ -23,4 +23,13 @@ public interface IClientService
     /// <param name="clientType">The type of client.</param>
     /// <returns>The newly created client with its generated Id.</returns>
     Client CreateClient(string fullName, string email, ClientTypes clientType);
+
+    // ЕТАП 2
+    /// <summary>
+    /// Updates the statistical fields (PolicyCount, TotalPayouts) for a client.
+    /// </summary>
+    /// <param name="clientId">The Id of the client to update.</param>
+    /// <param name="policyChange">Delta for policy count (+1 or -1).</param>
+    /// <param name="payoutChange">Delta for total payouts.</param>
+    void UpdateClientStats(int clientId, int policyChange = 0, decimal payoutChange = 0m);
 }

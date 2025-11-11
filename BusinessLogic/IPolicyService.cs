@@ -27,4 +27,25 @@ public interface IPolicyService
     /// <returns>The newly created policy with its price and Id.</returns>
     Policy CreatePolicy(int clientId, PolicyTypes type, 
         DateTime startDate, DateTime endDate, decimal coverageAmount);
+
+    // ЕТАП 2
+    /// <summary>
+    /// Changes the status of an existing policy.
+    /// </summary>
+    /// <param name="policyId">The Id of the policy to update.</param>
+    /// <param name="newStatus">The new status to set.</param>
+    /// <returns>True if the status was successfully updated, false otherwise.</returns>
+    bool ChangePolicyStatus(int policyId, StatusTypes newStatus);
+
+    /// <summary>
+    /// Searches for policies based on specified criteria.
+    /// </summary>
+    /// <param name="type">Filter by policy type (optional).</param>
+    /// <param name="clientId">Filter by client Id (optional).</param>
+    /// <param name="status">Filter by status (optional).</param>
+    /// <param name="minPrice">Minimum price in the range (optional).</param>
+    /// <param name="maxPrice">Maximum price in the range (optional).</param>
+    /// <returns>A list of policies matching the search criteria.</returns>
+    List<Policy> SearchPolicies(PolicyTypes? type = null, int? clientId = null, 
+        StatusTypes? status = null, decimal? minPrice = null, decimal? maxPrice = null);
 }
