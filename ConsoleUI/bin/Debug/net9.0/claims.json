@@ -1,0 +1,18 @@
+[
+  {
+    "PolicyId": 1,
+    "Date": "2025-11-12T14:05:35.4949265+02:00",
+    "Description": "ДТП",
+    "PayoutAmount": 20000.0,
+    "Status": 3,
+    "Id": 1
+  },
+  {
+    "PolicyId": 2,
+    "Date": "2025-11-12T15:57:32.703182+02:00",
+    "Description": "ДТП",
+    "PayoutAmount": 25000.0,
+    "Status": 3,
+    "Id": 2
+  }
+]
