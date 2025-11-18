@@ -20,12 +20,14 @@ public interface IPolicyService
     /// Creates a new insurance policy and calculates its price.
     /// </summary>
     /// <param name="clientId">The Id of the client purchasing the policy.</param>
+    // !!! ОНОВЛЕНО: Додано параметр agentId
+    /// <param name="agentId">The Id of the agent who sold the policy (optional).</param>
     /// <param name="type">The type of insurance.</param>
     /// <param name="startDate">The policy start date.</param>
     /// <param name="endDate">The policy end date.</param>
     /// <param name="coverageAmount">The coverage amount.</param>
     /// <returns>The newly created policy with its price and Id.</returns>
-    Policy CreatePolicy(int clientId, PolicyTypes type, 
+    Policy CreatePolicy(int clientId, int? agentId, PolicyTypes type, 
         DateTime startDate, DateTime endDate, decimal coverageAmount);
 
     // ЕТАП 2

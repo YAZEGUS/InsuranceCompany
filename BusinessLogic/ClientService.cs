@@ -1,6 +1,8 @@
 using Persistence;
 using Domain;
 using System.Collections.Generic;
+using System; 
+using System.Linq; // Потрібен для Any()
 
 namespace BusinessLogic;
 
@@ -11,13 +13,8 @@ namespace BusinessLogic;
 public class ClientService : IClientService
 {
     private readonly IRepository<Client> _clientRepository;
-    private readonly IRepository<Policy> _policyRepository; // For future use (e.g., client stats)
+    private readonly IRepository<Policy> _policyRepository; 
 
-    /// <summary>
-    /// Initializes a new instance of the ClientService.
-    /// </summary>
-    /// <param name="clientRepository">The client data repository.</param>
-    /// <param name="policyRepository">The policy data repository.</param>
     public ClientService(IRepository<Client> clientRepository, IRepository<Policy> policyRepository)
     {
         _clientRepository = clientRepository;
@@ -29,8 +26,25 @@ public class ClientService : IClientService
         return _clientRepository.GetAll();
     }
     
+    public Client GetClientById(int id)
+    {
+        return _clientRepository.GetById(id);
+    }
+
     public Client CreateClient(string fullName, string email, ClientTypes clientType)
     {
+        // Додамо базову валідацію
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            throw new ArgumentException("Full name cannot be empty.");
+        }
+        
+        // !!! НОВЕ: Валідація Email
+        if (!email.Contains("@") || !email.Contains("."))
+        {
+            throw new ArgumentException("Email повинен бути валідним.");
+        }
+        
         var newClient = new Client
         {
             FullName = fullName,
@@ -42,26 +56,17 @@ public class ClientService : IClientService
         return newClient;
     }
 
-    // ЕТАП 2
-    /// <summary>
-    /// Updates the statistical fields (PolicyCount, TotalPayouts) for a client.
-    /// </summary>
-    /// <param name="clientId">The Id of the client to update.</param>
-    /// <param name="policyChange">Delta for policy count (+1 or -1).</param>
-    /// <param name="payoutChange">Delta for total payouts.</param>
     public void UpdateClientStats(int clientId, int policyChange = 0, decimal payoutChange = 0m)
     {
         var client = _clientRepository.GetById(clientId);
         if (client == null)
         {
-            System.Console.WriteLine($"Error: Client with Id={clientId} not found for stats update.");
-            return;
+            throw new ArgumentException($"Client with Id={clientId} not found for stats update.");
         }
 
         if (policyChange != 0)
         {
             client.PolicyCount += policyChange;
-            // Ensure count is not negative
             if (client.PolicyCount < 0) client.PolicyCount = 0; 
         }
 
@@ -70,7 +75,28 @@ public class ClientService : IClientService
             client.TotalPayouts += payoutChange;
         }
 
-        // Викликаємо оновлення в репозиторії, що забезпечить збереження в JSON
         _clientRepository.Update(client);
+    }
+
+    // !!! НОВА РЕАЛІЗАЦІЯ: Бізнес-логіка видалення клієнта
+    // ...
+    public bool DeleteClient(int clientId)
+    {
+        // ... (перевірка клієнта)
+
+        // Бізнес-правило: Не можна видалити клієнта, якщо він має активні поліси.
+        // Перевіряємо, чи є поліси, які не є Completed або Cancelled.
+        bool hasActivePolicies = _policyRepository.GetAll()
+            .Any(p => p.ClientId == clientId && p.Status == StatusTypes.Active || p.Status == StatusTypes.Paused);
+        //                                                                                     ^^^^^^
+        //                                                                                     ЗМІНЕНО З Suspended НА Paused
+
+        if (hasActivePolicies)
+        {
+            throw new ArgumentException($"Cannot delete client {clientId}. They still have active or paused policies.");
+        }
+        
+        // Видаляємо клієнта, оскільки він чистий
+        return _clientRepository.Delete(clientId);
     }
 }

@@ -2,7 +2,7 @@ using Domain;
 using Persistence;
 using System;
 using System.Collections.Generic;
-using System.Linq; // Для LINQ-запитів
+using System.Linq; 
 
 namespace BusinessLogic;
 
@@ -13,17 +13,16 @@ namespace BusinessLogic;
 public class PolicyService : IPolicyService
 {
     private readonly IRepository<Policy> _policyRepository;
-    private readonly IClientService _clientService; // Використовуємо IClientService для оновлення статистики
+    private readonly IClientService _clientService; 
+    // !!! НОВЕ: Репозиторій для агентів для перевірки їхнього існування
+    private readonly IRepository<Agent> _agentRepository; 
 
-    /// <summary>
-    /// Initializes a new instance of the PolicyService.
-    /// </summary>
-    /// <param name="policyRepository">The policy data repository.</param>
-    /// <param name="clientService">The client service for updating client statistics.</param>
-    public PolicyService(IRepository<Policy> policyRepository, IClientService clientService)
+    // !!! ЗМІНЕНО: Конструктор тепер приймає AgentRepository
+    public PolicyService(IRepository<Policy> policyRepository, IClientService clientService, IRepository<Agent> agentRepository)
     {
         _policyRepository = policyRepository;
         _clientService = clientService;
+        _agentRepository = agentRepository; 
     }
     
     public List<Policy> GetAllPolicies()
@@ -31,46 +30,62 @@ public class PolicyService : IPolicyService
         return _policyRepository.GetAll();
     }
     
-    public Policy CreatePolicy(int clientId, PolicyTypes type, DateTime startDate, DateTime endDate, decimal coverageAmount)
+    // !!! ЗМІНЕНО: Додано параметр agentId
+    public Policy CreatePolicy(int clientId, int? agentId, PolicyTypes type, DateTime startDate, DateTime endDate, decimal coverageAmount)
     {
-        // Перевірка існування клієнта не потрібна, бо це зробить ClientService при оновленні статистики.
-        // Але для коректного функціонування логіки, ми перевіримо, чи можна оновити статистику:
-        var client = _clientService.GetAllClients().FirstOrDefault(c => c.Id == clientId);
+        // 1. Перевірка існування клієнта
+        var client = _clientService.GetClientById(clientId);
         if (client == null)
         {
-            Console.WriteLine($"Error: Client with Id={clientId} not found.");
-            return null;
+            throw new ArgumentException($"Client with Id={clientId} not found. Cannot create policy.");
         }
 
-        // Business Logic: Calculate the price (Етап 1)
+        // 2. Валідація дат (Бізнес-правило, додане раніше)
+        if (startDate >= endDate)
+        {
+            throw new ArgumentException("Policy start date must be strictly before the end date.");
+        }
+        
+        // !!! НОВЕ: Валідація Агента
+        if (agentId.HasValue)
+        {
+            var agent = _agentRepository.GetById(agentId.Value);
+            if (agent == null)
+            {
+                throw new ArgumentException($"Agent with Id={agentId.Value} not found. Cannot assign policy.");
+            }
+        }
+        
+        // 3. Валідація суми покриття (додано для надійності)
+         if (coverageAmount <= 0)
+        {
+            throw new ArgumentException("Сума покриття має бути позитивним числом.");
+        }
+
+
+        // Business Logic: Calculate the price
         decimal price = CalculatePolicyPrice(coverageAmount, type);
         
         var newPolicy = new Policy
         {
-            // PolicyNumber буде порожнім у цій реалізації, бо це ускладнить Етап 1/2.
-            // Його можна додати у наступних етапах.
             ClientId = clientId,
+            AgentId = agentId, // !!! ПРИСВОЄННЯ AgentId
             PolicyType = type,
             StartDate = startDate,
             EndDate = endDate,
             CoverageAmount = coverageAmount,
             Price = price,
-            Status = StatusTypes.Active // Default status
+            Status = StatusTypes.Active 
         };
         
         _policyRepository.Add(newPolicy);
         
-        // ЕТАП 2
+        // Оновлюємо статистику клієнта
         _clientService.UpdateClientStats(clientId, policyChange: 1);
 
         return newPolicy;
     }
 
-    /// <summary>
-    /// Calculates the price of a policy based on its type and coverage.
-    /// (This is the core business logic for Stage 1).
-    /// </summary>
-    
     private decimal CalculatePolicyPrice(decimal coverageAmount, PolicyTypes policyType)
     {
         switch (policyType)
@@ -86,22 +101,25 @@ public class PolicyService : IPolicyService
         }
     }
 
-    // ЕТАП 2
-
     public bool ChangePolicyStatus(int policyId, StatusTypes newStatus)
     {
         var policy = _policyRepository.GetById(policyId);
         if (policy == null)
         {
-            Console.WriteLine($"Error: Policy with Id={policyId} not found.");
-            return false;
+            throw new ArgumentException($"Policy with Id={policyId} not found.");
         }
 
-     
+        // ЛОГІКА POLICY COUNT (виправлено раніше)
+        bool wasActive = policy.Status == StatusTypes.Active;
+        bool willBeInactive = newStatus == StatusTypes.Completed || newStatus == StatusTypes.Cancelled;
         
+        if (wasActive && willBeInactive)
+        {
+            _clientService.UpdateClientStats(policy.ClientId, policyChange: -1);
+        }
+     
         policy.Status = newStatus;
         _policyRepository.Update(policy);
-        Console.WriteLine($"Policy {policyId} status updated to {newStatus}.");
         return true;
     }
 
@@ -109,7 +127,7 @@ public class PolicyService : IPolicyService
         StatusTypes? status = null, decimal? minPrice = null, decimal? maxPrice = null)
     {
         IEnumerable<Policy> query = _policyRepository.GetAll();
-
+        
         if (type.HasValue)
         {
             query = query.Where(p => p.PolicyType == type.Value);

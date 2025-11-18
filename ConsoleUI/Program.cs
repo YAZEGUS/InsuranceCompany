@@ -2,38 +2,45 @@ using BusinessLogic;
 using Domain;
 using Persistence;
 using System;
-using System.Linq; // Залишаємо, бо використовується у ClientService.GetAllClients().FirstOrDefault()
+using System.Linq; 
+using System.Collections.Generic;
 
 namespace ConsoleUI;
 
-// Оголошуємо клас як статичний, оскільки він містить лише статичні методи
+/// <summary>
+/// The main entry point and user interface for the application.
+/// Manages dependency injection setup and the main application loop.
+/// </summary>
 public static class Program
 {
     // --- Service fields for Dependency Injection ---
     private static readonly IClientService ClientService;
     private static readonly IPolicyService PolicyService;
     private static readonly IClaimService ClaimService;
+    private static readonly IRepository<Agent> AgentRepository; 
 
     /// <summary>
     /// Static constructor to set up repositories and services (Dependency Injection).
     /// </summary>
     static Program()
     {
-        // Initialize Repositories (Етап 1: Persistence Layer)
+        // Ініціалізація Repositories (Persistence Layer)
+        // Створюємо репозиторії як локальні змінні для DI
         IRepository<Client> clientRepository = new JsonRepository<Client>("clients.json");
         IRepository<Policy> policyRepository = new JsonRepository<Policy>("policies.json");
         IRepository<Claim> claimRepository = new JsonRepository<Claim>("claims.json");
+        AgentRepository = new JsonRepository<Agent>("agents.json"); 
         
-        // Ініціалізація залежностей з новими іменами полів 
+        // Ініціалізація залежностей (Business Logic Layer)
+        // Передаємо репозиторії до сервісів
         ClientService = new ClientService(clientRepository, policyRepository);
-        PolicyService = new PolicyService(policyRepository, ClientService);
+        PolicyService = new PolicyService(policyRepository, ClientService, AgentRepository);
         ClaimService = new ClaimService(claimRepository, policyRepository, ClientService); 
     }
 
     /// <summary>
     /// The main entry point for the application.
     /// Runs the main menu loop.
-    /// Видалено невикористовуваний параметр 'args'
     /// </summary>
     static void Main()
     {
@@ -42,39 +49,50 @@ public static class Program
         while (true)
         {
             Console.WriteLine("\n--- ГОЛОВНЕ МЕНЮ ---");
-            Console.WriteLine("Натисніть 1 для управління клієнтами");
-            Console.WriteLine("Натисніть 2 для управління полісами");
-            Console.WriteLine("Натисніть 3 для управління подіями (створення/оновлення)");
-            Console.WriteLine("Натисніть 4 для пошуку полісів");
+            Console.WriteLine("Натисніть 1 для управління клієнтами (CRUD)");
+            Console.WriteLine("Натисніть 2 для управління полісами (CRUD/Status)");
+            Console.WriteLine("Натисніть 3 для управління подіями (Створення/Status)");
+            Console.WriteLine("Натисніть 4 для пошуку полісів (Етап 2)");
+            Console.WriteLine("Натисніть 5 для управління агентами (CRUD)"); 
             Console.WriteLine("Натисніть 0 для виходу");
             Console.Write("Ваш вибір: ");
             
-            // Nullability Fix: Використовуємо TryParse
             if (!int.TryParse(Console.ReadLine(), out int choice))
             {
                 Console.WriteLine("Некоректне введення. Спробуйте ще раз.");
                 continue;
             }
             
-            switch (choice)
+            try 
             {
-                case 1:
-                    ManageClients(ClientService);
-                    break;
-                case 2:
-                    ManagePolicies(PolicyService);
-                    break;
-                case 3:
-                    ManageClaims(ClaimService); 
-                    break;
-                case 4:
-                    SearchPolicies(PolicyService);
-                    break;
-                case 0:
-                    return; 
-                default:
-                    Console.WriteLine("Некоректний вибір.");
-                    break;
+                switch (choice)
+                {
+                    case 1:
+                        ManageClients(ClientService);
+                        break;
+                    case 2:
+                        ManagePolicies(PolicyService);
+                        break;
+                    case 3:
+                        ManageClaims(ClaimService); 
+                        break;
+                    case 4:
+                        SearchPolicies(PolicyService);
+                        break;
+                    case 5: 
+                        ManageAgents(AgentRepository); 
+                        break;
+                    case 0:
+                        return; 
+                    default:
+                        Console.WriteLine("Некоректний вибір.");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Загальна обробка непередбачених помилок
+                Console.WriteLine($"\nКритична помилка програми: {ex.Message}");
             }
         }
     }
@@ -82,14 +100,15 @@ public static class Program
     /// <summary>
     /// Handles the Client Management sub-menu.
     /// </summary>
+    // !!! ЗМІНЕНО: Приймає лише ClientService
     private static void ManageClients(IClientService clientService)
     {
         Console.WriteLine("\n--- Управління Клієнтами ---");
         Console.WriteLine("Натисніть 1, щоб додати клієнта");
         Console.WriteLine("Натисніть 2, щоб переглянути список клієнтів");
+        Console.WriteLine("Натисніть 3, щоб видалити клієнта (Delete)"); 
         Console.Write("Ваш вибір: ");
         
-        // --- Nullability Fix: Використовуємо TryParse ---
         if (!int.TryParse(Console.ReadLine(), out int choice))
         {
             Console.WriteLine("Некоректне введення числа.");
@@ -101,32 +120,28 @@ public static class Program
            case 1:
                 Console.WriteLine("Додавання клієнта");
                 Console.WriteLine("Введіть повне ім'я клієнта:");
-                // Nullability Fix: Додаємо перевірку на null/порожній рядок 
                 string fullName = Console.ReadLine() ?? string.Empty;
-                if (string.IsNullOrWhiteSpace(fullName))
-                {
-                    Console.WriteLine("Ім'я не може бути порожнім.");
-                    return;
-                }
                 
                 Console.WriteLine("Введіть email клієнта:");
                 string email = Console.ReadLine() ?? string.Empty;
-                if (string.IsNullOrWhiteSpace(email))
+
+                Console.WriteLine("Введіть тип клієнта (1 = Individual, 2 = Company):");
+                if (!int.TryParse(Console.ReadLine(), out int typeChoice) || !Enum.IsDefined(typeof(ClientTypes), typeChoice - 1))
                 {
-                    Console.WriteLine("Email не може бути порожнім.");
+                    Console.WriteLine("Некоректний вибір типу клієнта.");
                     return;
                 }
+                ClientTypes clientType = (ClientTypes)(typeChoice - 1);
 
-                Console.WriteLine("Введіть тип клієнта (1 = Фізична особа, 2 = Компанія):");
-                if (!int.TryParse(Console.ReadLine(), out int typeChoice))
+                try
                 {
-                    Console.WriteLine("Некоректне введення типу.");
-                    return;
+                    var newClient = clientService.CreateClient(fullName, email, clientType);
+                    Console.WriteLine($"Клієнта додано! Id: {newClient.Id}");
                 }
-                ClientTypes clientType = (typeChoice == 2) ? ClientTypes.Company : ClientTypes.Individual;
-
-                var newClient = clientService.CreateClient(fullName, email, clientType);
-                Console.WriteLine($"Клієнта додано! Id: {newClient.Id}");
+                catch (ArgumentException ex) 
+                {
+                    Console.WriteLine($"Помилка додавання клієнта: {ex.Message}");
+                }
                 break;
                 
            case 2:
@@ -140,8 +155,36 @@ public static class Program
                 
                 foreach (var client in clients)
                 {
-                    Console.WriteLine($"Id: {client.Id}, Ім'я: {client.FullName}, Тип: {(client.ClientType == ClientTypes.Individual ? "Фіз. особа" : "Компанія")}");
+                    Console.WriteLine($"Id: {client.Id}, Ім'я: {client.FullName}, Тип: {client.ClientType}");
                     Console.WriteLine($"  Полісів: {client.PolicyCount}, Загальні виплати: {client.TotalPayouts:0.00} ₴");
+                }
+                break;
+            
+            case 3: // ЛОГІКА DELETE КЛІЄНТА
+                Console.WriteLine("--- Видалення Клієнта ---");
+                Console.WriteLine("Введіть Id Клієнта для видалення:");
+                if (!int.TryParse(Console.ReadLine(), out int deleteClientId))
+                {
+                    Console.WriteLine("Некоректний Id клієнта.");
+                    return;
+                }
+                
+                try
+                {
+                    // Викликаємо метод сервісу, який обробляє бізнес-правило (перевірка активних полісів)
+                    if (clientService.DeleteClient(deleteClientId))
+                    {
+                        Console.WriteLine($"Клієнта з Id {deleteClientId} успішно видалено.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Помилка: Клієнта з Id {deleteClientId} не знайдено.");
+                    }
+                }
+                catch (ArgumentException ex) 
+                {
+                    // Ловимо виняток з BusinessLogic, якщо клієнт має активні поліси
+                    Console.WriteLine($"Помилка видалення клієнта: {ex.Message}");
                 }
                 break;
         }
@@ -158,7 +201,6 @@ public static class Program
         Console.WriteLine("Натисніть 3, щоб змінити статус поліса");
         Console.Write("Ваш вибір: ");
 
-        // --- Nullability Fix: Використовуємо TryParse ---
         if (!int.TryParse(Console.ReadLine(), out int choice))
         {
             Console.WriteLine("Некоректне введення числа.");
@@ -175,6 +217,14 @@ public static class Program
                 {
                     Console.WriteLine("Некоректний Id клієнта.");
                     return;
+                }
+                
+                int? agentId = null;
+                Console.WriteLine("Введіть Id Агента (або Enter, якщо немає):");
+                string agentIdInput = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(agentIdInput) && int.TryParse(agentIdInput, out int agentValue))
+                {
+                    agentId = agentValue;
                 }
 
                 Console.WriteLine("Введіть тип поліса (1=Авто, 2=Медичне, 3=Майно):");
@@ -206,15 +256,14 @@ public static class Program
                     return;
                 }
 
-                var newPolicy = policyService.CreatePolicy(clientId, policyType, startDate, endDate, coverageAmount);
-                
-                if (newPolicy != null)
+                try
                 {
+                    var newPolicy = policyService.CreatePolicy(clientId, agentId, policyType, startDate, endDate, coverageAmount);
                     Console.WriteLine($"Поліс створено! Id: {newPolicy.Id}, Вартість: {newPolicy.Price:0.00} ₴");
                 }
-                else
+                catch (ArgumentException ex) 
                 {
-                    Console.WriteLine("Помилка! Не вдалося створити поліс.");
+                    Console.WriteLine($"Помилка створення поліса: {ex.Message}");
                 }
                 break;
                 
@@ -229,7 +278,8 @@ public static class Program
                 
                 foreach (var policy in policies)
                 {
-                    Console.WriteLine($"Id: {policy.Id}, Клієнт: {policy.ClientId}, Тип: {policy.PolicyType}, Вартість: {policy.Price:0.00} ₴, Статус: {policy.Status}");
+                    string agentInfo = policy.AgentId.HasValue ? $", Агент: {policy.AgentId}" : "";
+                    Console.WriteLine($"Id: {policy.Id}, Клієнт: {policy.ClientId}{agentInfo}, Тип: {policy.PolicyType}, Вартість: {policy.Price:0.00} ₴, Статус: {policy.Status}");
                 }
                 break;
             
@@ -249,7 +299,15 @@ public static class Program
                     return;
                 }
                 
-                policyService.ChangePolicyStatus(policyId, (StatusTypes)statusChoice);
+                try
+                {
+                    policyService.ChangePolicyStatus(policyId, (StatusTypes)statusChoice);
+                    Console.WriteLine($"Статус поліса {policyId} успішно змінено на {(StatusTypes)statusChoice}."); 
+                }
+                catch (ArgumentException ex) 
+                {
+                    Console.WriteLine($"Помилка зміни статусу: {ex.Message}");
+                }
                 break;
         }
     }
@@ -291,7 +349,15 @@ public static class Program
                     return;
                 }
                 
-                claimService.ChangeClaimStatus(claimId, (ClaimStatusTypes)statusChoice);
+                try
+                {
+                    claimService.ChangeClaimStatus(claimId, (ClaimStatusTypes)statusChoice);
+                    Console.WriteLine($"Статус події {claimId} успішно змінено на {(ClaimStatusTypes)statusChoice}.");
+                }
+                catch (ArgumentException ex) 
+                {
+                    Console.WriteLine($"Помилка зміни статусу події: {ex.Message}");
+                }
                 break;
         }
     }
@@ -311,7 +377,7 @@ public static class Program
         }
         
         Console.WriteLine("Введіть опис події:");
-        string description = Console.ReadLine() ?? string.Empty; // Обробка null
+        string description = Console.ReadLine() ?? string.Empty; 
         if (string.IsNullOrWhiteSpace(description))
         {
             Console.WriteLine("Опис не може бути порожнім.");
@@ -327,11 +393,99 @@ public static class Program
 
         DateTime date = DateTime.Now;
 
-        var newClaim = claimService.CreateClaim(policyId, date, description, payoutAmount);
-        
-        if (newClaim != null) // Прибираємо надлишкову перевірку
+        try
         {
+            var newClaim = claimService.CreateClaim(policyId, date, description, payoutAmount);
             Console.WriteLine($"Подія зареєстрована! Id: {newClaim.Id} для поліса {newClaim.PolicyId}");
+        }
+        catch (ArgumentException ex) 
+        {
+            Console.WriteLine($"Помилка реєстрації події: {ex.Message}");
+        }
+    }
+    
+    /// <summary>
+    /// Handles the Agent Management sub-menu.
+    /// </summary>
+    private static void ManageAgents(IRepository<Agent> agentRepository)
+    {
+        Console.WriteLine("\n--- Управління Агентами ---");
+        Console.WriteLine("Натисніть 1, щоб додати агента");
+        Console.WriteLine("Натисніть 2, щоб переглянути список агентів");
+        Console.WriteLine("Натисніть 3, щоб видалити агента (Delete)"); 
+        Console.Write("Ваш вибір: ");
+        
+        if (!int.TryParse(Console.ReadLine(), out int choice))
+        {
+            Console.WriteLine("Некоректне введення числа.");
+            return;
+        }
+        
+        switch (choice)
+        {
+           case 1:
+                Console.WriteLine("Додавання агента");
+                Console.WriteLine("Введіть ім'я агента:");
+                string name = Console.ReadLine() ?? string.Empty;
+                
+                Console.WriteLine("Введіть відсоток комісії (напр., 0.15 для 15%):");
+                if (!decimal.TryParse(Console.ReadLine(), out decimal commission))
+                {
+                    Console.WriteLine("Некоректне введення комісії.");
+                    return;
+                }
+                
+                if (commission < 0m || commission > 1m)
+                {
+                    Console.WriteLine("Комісія повинна бути між 0.00 та 1.00 (напр., 0.15).");
+                    return;
+                }
+
+                try
+                {
+                    var newAgent = new Agent { Name = name, CommissionPercentage = commission };
+                    agentRepository.Add(newAgent);
+                    Console.WriteLine($"Агента додано! Id: {newAgent.Id}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Помилка додавання агента: {ex.Message}");
+                }
+                break;
+                
+           case 2:
+                Console.WriteLine("--- Список агентів ---");
+                var agents = agentRepository.GetAll();
+                if (agents.Count == 0)
+                {
+                    Console.WriteLine("Агентів не знайдено.");
+                    break;
+                }
+                
+                foreach (var agent in agents)
+                {
+                    Console.WriteLine($"Id: {agent.Id}, Ім'я: {agent.Name}, Комісія: {agent.CommissionPercentage:P2}");
+                }
+                break;
+            
+            case 3: // ЛОГІКА DELETE АГЕНТА (Викликається напряму на репозиторії)
+                Console.WriteLine("--- Видалення Агента ---");
+                Console.WriteLine("Введіть Id Агента для видалення:");
+                if (!int.TryParse(Console.ReadLine(), out int deleteAgentId))
+                {
+                    Console.WriteLine("Некоректний Id агента.");
+                    return;
+                }
+                
+                if (agentRepository.Delete(deleteAgentId))
+                {
+                    Console.WriteLine($"Агента з Id {deleteAgentId} успішно видалено.");
+                }
+                else
+                {
+                    Console.WriteLine($"Помилка: Агента з Id {deleteAgentId} не знайдено.");
+                }
+                break;
         }
     }
 
@@ -396,7 +550,8 @@ public static class Program
 
         foreach (var policy in foundPolicies)
         {
-            Console.WriteLine($"Id: {policy.Id}, Клієнт: {policy.ClientId}, Тип: {policy.PolicyType}, Вартість: {policy.Price:0.00} ₴, Статус: {policy.Status}");
+            string agentInfo = policy.AgentId.HasValue ? $", Агент: {policy.AgentId}" : "";
+            Console.WriteLine($"Id: {policy.Id}, Клієнт: {policy.ClientId}{agentInfo}, Тип: {policy.PolicyType}, Вартість: {policy.Price:0.00} ₴, Статус: {policy.Status}");
         }
     }
 }

@@ -20,7 +20,7 @@ public class Client : BaseEntity
     /// </summary>
     public ClientTypes ClientType { get; set; }
     
-    // --- ЕТАП 2: Зміни ---
+    // ЕТАП 2
     /// <summary>
     /// The total number of policies the client currently has.
     /// </summary>
