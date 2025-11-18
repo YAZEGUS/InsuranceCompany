@@ -1,0 +1,24 @@
+[
+  {
+    "ClientId": 1,
+    "PolicyNumber": null,
+    "PolicyType": 0,
+    "StartDate": "2025-11-12T00:00:00",
+    "EndDate": "2026-11-12T00:00:00",
+    "CoverageAmount": 100000.0,
+    "Price": 5000.00,
+    "Status": 2,
+    "Id": 1
+  },
+  {
+    "ClientId": 2,
+    "PolicyNumber": null,
+    "PolicyType": 0,
+    "StartDate": "2025-11-12T00:00:00",
+    "EndDate": "2026-11-12T00:00:00",
+    "CoverageAmount": 50000.0,
+    "Price": 2500.00,
+    "Status": 2,
+    "Id": 2
+  }
+]

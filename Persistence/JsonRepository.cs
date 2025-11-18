@@ -1,113 +1,164 @@
 using Domain;
-using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 
 namespace Persistence;
 
 /// <summary>
-/// A generic repository implementation that stores data in JSON files.
-/// Implements the IRepository interface.
+/// Implements the IRepository interface for storing data in a JSON file.
+/// Provides basic CRUD operations and ensures data is loaded/saved to a file.
 /// </summary>
-/// <typeparam name="T">The entity type, must inherit from BaseEntity.</typeparam>
+/// <typeparam name="T">The type of the entity, must inherit from BaseEntity.</typeparam>
 public class JsonRepository<T> : IRepository<T> where T : BaseEntity
 {
-    private readonly string _filepath;
+    private readonly string _filePath;
     private List<T> _items;
+    // Об'єкт для блокування (lock) для забезпечення потокобезпеки
+    private readonly object _lock = new object();
 
     /// <summary>
     /// Initializes a new instance of the JsonRepository.
-    /// Loads data from the specified file path upon creation.
+    /// Loads existing data from the specified JSON file path on creation.
     /// </summary>
-    /// <param name="filepath">The path to the .json file (e.g., "clients.json").</param>
-    public JsonRepository(string filepath)
+    public JsonRepository(string filePath)
     {
-        _filepath = filepath;
-        _items = new List<T>();
+        _filePath = filePath;
         LoadData();
     }
 
     /// <summary>
-    /// Loads data from the JSON file into the in-memory list (_items).
-    /// If the file doesn't exist, it starts with an empty list.
+    /// Loads data from the JSON file into the in-memory list.
     /// </summary>
     private void LoadData()
     {
-        if (!File.Exists(_filepath))
+        lock (_lock)
         {
-            return;
-        }
-        
-        var json = File.ReadAllText(_filepath);
-        if (string.IsNullOrEmpty(json))
-        {
-            return;
-        }
-        var loadeditems = JsonConvert.DeserializeObject<List<T>>(json);
-        
-        if(loadeditems != null)
-        {
-            _items = loadeditems;
+            try
+            {
+                if (File.Exists(_filePath))
+                {
+                    string json = File.ReadAllText(_filePath);
+                    _items = JsonSerializer.Deserialize<List<T>>(json) ?? new List<T>();
+                }
+                else
+                {
+                    _items = new List<T>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Persistence ERROR] Failed to load data from {_filePath}: {ex.Message}");
+                _items = new List<T>();
+            }
         }
     }
-    
+
     /// <summary>
-    /// Saves the current in-memory list (_items) back to the JSON file.
-    /// Formats the JSON for readability.
+    /// Saves the current in-memory list to the JSON file.
     /// </summary>
     private void SaveData()
     {
-        var json = JsonConvert.SerializeObject(_items, Formatting.Indented);
-        File.WriteAllText(_filepath, json);
-    }
-    public List<T> GetAll()
-    {
-        return _items;
-    }
-    public T GetById(int id)
-    {
-        return _items.FirstOrDefault(item => item.Id == id);
-    }
-
-    /// <inheritdoc />
-    /// <remarks>
-    /// This implementation automatically generates a new Id
-    /// by finding the current maximum Id and adding 1.
-    /// </remarks>
-    public void Add(T entity)
-    { 
-        int newItemId = _items.Count > 0 ? _items.Max(item => item.Id) + 1 : 1;
-        entity.Id = newItemId;
-        _items.Add(entity);
-        SaveData();
-    }
-
-    /// <inheritdoc />
-    /// <remarks>
-    /// This implementation safely checks if the item exists before updating.
-    /// </remarks>
-    public void Update(T entity)
-    {
-        int entityIndex = _items.FindIndex(item => item.Id == entity.Id);
-        if (entityIndex >= 0) // Use >= 0 for clarity, != -1 also works
+        lock (_lock)
         {
-            _items[entityIndex] = entity;
+            try
+            {
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                string json = JsonSerializer.Serialize(_items, options);
+                File.WriteAllText(_filePath, json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CRITICAL PERSISTENCE ERROR] Failed to save data to {_filePath}: {ex.Message}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Generates the next available unique ID.
+    /// </summary>
+    private int GenerateNewId()
+    {
+        if (_items.Any())
+        {
+            return _items.Max(item => item.Id) + 1;
+        }
+        return 1;
+    }
+
+    /// <summary>
+    /// Adds a new entity to the repository.
+    /// </summary>
+    public void Add(T entity)
+    {
+        lock (_lock)
+        {
+            entity.Id = GenerateNewId();
+            _items.Add(entity);
             SaveData();
         }
     }
 
-    /// <inheritdoc />
-    /// <remarks>
-    /// This implementation safely checks if the item exists before removing.
-    /// </remarks>
-    public void Delete(int id)
+    /// <summary>
+    /// Gets all entities from the repository.
+    /// </summary>
+    public List<T> GetAll()
     {
-        var itemToDelete = GetById(id);
-        if (itemToDelete != null)
+        lock (_lock)
         {
-            _items.Remove(itemToDelete);
-            SaveData();
+            // Повертаємо копію
+            return new List<T>(_items);
+        }
+    }
+
+    /// <summary>
+    /// Gets an entity by its unique identifier.
+    /// </summary>
+    public T? GetById(int id)
+    {
+        lock (_lock)
+        {
+            return _items.FirstOrDefault(item => item.Id == id);
+        }
+    }
+
+    /// <summary>
+    /// Updates an existing entity in the repository.
+    /// </summary>
+    public bool Update(T entity)
+    {
+        lock (_lock)
+        {
+            var existingItem = _items.FirstOrDefault(item => item.Id == entity.Id);
+            if (existingItem != null)
+            {
+                int index = _items.IndexOf(existingItem);
+                _items[index] = entity;
+                SaveData();
+                return true;
+            }
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Deletes an entity by its unique identifier.
+    /// </summary>
+    public bool Delete(int id)
+    {
+        lock (_lock)
+        {
+            int initialCount = _items.Count;
+            _items.RemoveAll(item => item.Id == id);
+            
+            if (_items.Count < initialCount)
+            {
+                SaveData();
+                return true;
+            }
+            return false;
         }
     }
 }

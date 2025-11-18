@@ -18,4 +18,13 @@ public interface IClaimService
     /// <param name="payoutAmount">The requested payout amount.</param>
     /// <returns>The newly created claim with its generated Id.</returns>
     Claim CreateClaim(int policyId, DateTime date, string description, decimal payoutAmount);
+
+    // ЕТАП 2
+    /// <summary>
+    /// Changes the status of an existing claim.
+    /// </summary>
+    /// <param name="claimId">The Id of the claim to update.</param>
+    /// <param name="newStatus">The new status to set.</param>
+    /// <returns>True if the status was successfully updated, false otherwise.</returns>
+    bool ChangeClaimStatus(int claimId, ClaimStatusTypes newStatus);
 }

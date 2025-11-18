@@ -3,7 +3,7 @@ using System;
 namespace Domain;
 
 /// <summary>
-/// Represents an insurance policy.
+/// Defines the structure for an insurance policy, extending BaseEntity.
 /// </summary>
 public class Policy : BaseEntity
 {
@@ -12,38 +12,36 @@ public class Policy : BaseEntity
     /// </summary>
     public int ClientId { get; set; }
 
-    /// <summary>
-    /// The unique human-readable number for this policy.
-    /// </summary>
-    public string PolicyNumber { get; set; }
+    // !!! НОВЕ: ID агента, який продав поліс. Може бути null (якщо невідомо або продано напряму).
+    public int? AgentId { get; set; } 
 
     /// <summary>
-    /// The type of insurance (e.g., Car, Medical).
+    /// The type of the insurance policy (e.g., Car, Medical).
     /// </summary>
     public PolicyTypes PolicyType { get; set; }
 
     /// <summary>
-    /// The date when the policy coverage begins.
+    /// The start date of the policy's validity period.
     /// </summary>
     public DateTime StartDate { get; set; }
 
     /// <summary>
-    /// The date when the policy coverage ends.
+    /// The end date of the policy's validity period.
     /// </summary>
     public DateTime EndDate { get; set; }
 
     /// <summary>
-    /// The maximum amount the policy will pay out.
+    /// The maximum amount the insurance will cover.
     /// </summary>
     public decimal CoverageAmount { get; set; }
 
     /// <summary>
-    /// The cost of the policy, calculated by the Business Logic.
+    /// The cost (premium) of the policy, calculated by Business Logic.
     /// </summary>
     public decimal Price { get; set; }
 
     /// <summary>
-    /// The current status of the policy (e.g., Active, Paused).
+    /// The current status of the policy (e.g., Active, Completed, Cancelled).
     /// </summary>
-    public StatusTypes Status { get; set; }
+    public StatusTypes Status { get; set; } = StatusTypes.Active;
 }

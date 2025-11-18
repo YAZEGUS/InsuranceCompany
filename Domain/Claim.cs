@@ -27,5 +27,9 @@ public class Claim : BaseEntity
     /// </summary>
     public decimal PayoutAmount { get; set; }
     
-    // public ClaimStatus Status { get; set; } // Ready for Stage 2
+    // ЕТАП 2
+    /// <summary>
+    /// The current status of the claim.
+    /// </summary>
+    public ClaimStatusTypes Status { get; set; } = ClaimStatusTypes.New; // Статус за замовчуванням
 }

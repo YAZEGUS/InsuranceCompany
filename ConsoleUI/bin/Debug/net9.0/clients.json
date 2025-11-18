@@ -1,0 +1,18 @@
+[
+  {
+    "FullName": "Іван Петренко",
+    "Email": "ivan.petrenko@email.com",
+    "ClientType": 0,
+    "PolicyCount": 1,
+    "TotalPayouts": 20000.0,
+    "Id": 1
+  },
+  {
+    "FullName": "Karabas Barabas",
+    "Email": "bkarabas632@gmail.com",
+    "ClientType": 0,
+    "PolicyCount": 1,
+    "TotalPayouts": 25000.0,
+    "Id": 2
+  }
+]

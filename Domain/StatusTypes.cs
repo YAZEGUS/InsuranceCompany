@@ -4,5 +4,7 @@ public enum StatusTypes
 {
     Active, 
     Paused, 
-    Cancelled
+    //  ЕТАП 2
+    Completed, // Завершений 
+    Cancelled // Скасований
 }
