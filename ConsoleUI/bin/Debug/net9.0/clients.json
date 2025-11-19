@@ -1,6 +1,6 @@
 [
   {
-    "FullName": "Іван Петренко",
+    "FullName": "\u0406\u0432\u0430\u043D \u041F\u0435\u0442\u0440\u0435\u043D\u043A\u043E",
     "Email": "ivan.petrenko@email.com",
     "ClientType": 0,
     "PolicyCount": 1,
@@ -11,7 +11,7 @@
     "FullName": "Karabas Barabas",
     "Email": "bkarabas632@gmail.com",
     "ClientType": 0,
-    "PolicyCount": 1,
+    "PolicyCount": 2,
     "TotalPayouts": 25000.0,
     "Id": 2
   }

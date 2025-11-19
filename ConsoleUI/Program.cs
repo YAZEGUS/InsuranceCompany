@@ -18,6 +18,8 @@ public static class Program
     private static readonly IPolicyService PolicyService;
     private static readonly IClaimService ClaimService;
     private static readonly IRepository<Agent> AgentRepository; 
+    private static readonly IRequestService RequestService;
+    private static readonly IAnalyticsService AnalyticsService;
 
     /// <summary>
     /// Static constructor to set up repositories and services (Dependency Injection).
@@ -30,12 +32,16 @@ public static class Program
         IRepository<Policy> policyRepository = new JsonRepository<Policy>("policies.json");
         IRepository<Claim> claimRepository = new JsonRepository<Claim>("claims.json");
         AgentRepository = new JsonRepository<Agent>("agents.json"); 
+        IRepository<Request> requestRepository = new JsonRepository<Request>("requests.json");
         
         // Ініціалізація залежностей (Business Logic Layer)
         // Передаємо репозиторії до сервісів
         ClientService = new ClientService(clientRepository, policyRepository);
         PolicyService = new PolicyService(policyRepository, ClientService, AgentRepository);
-        ClaimService = new ClaimService(claimRepository, policyRepository, ClientService); 
+        ClaimService = new ClaimService(claimRepository, policyRepository, ClientService);
+        RequestService = new RequestService(requestRepository);
+        AnalyticsService = new AnalyticsService(policyRepository, claimRepository, AgentRepository);
+        
     }
 
     /// <summary>
@@ -53,7 +59,9 @@ public static class Program
             Console.WriteLine("Натисніть 2 для управління полісами (CRUD/Status)");
             Console.WriteLine("Натисніть 3 для управління подіями (Створення/Status)");
             Console.WriteLine("Натисніть 4 для пошуку полісів (Етап 2)");
-            Console.WriteLine("Натисніть 5 для управління агентами (CRUD)"); 
+            Console.WriteLine("Натисніть 5 для управління агентами (CRUD)");
+            Console.WriteLine("Натисніть 6 для запитів клієнтів");
+            Console.WriteLine("Натисніть 7 для статистики та аналітики");
             Console.WriteLine("Натисніть 0 для виходу");
             Console.Write("Ваш вибір: ");
             
@@ -82,6 +90,12 @@ public static class Program
                     case 5: 
                         ManageAgents(AgentRepository); 
                         break;
+                    case 6:
+                        ManageRequests(RequestService);
+                        break;
+                    case 7:
+                        ShowAnalytics(AnalyticsService);
+                        break;
                     case 0:
                         return; 
                     default:
@@ -95,6 +109,85 @@ public static class Program
                 Console.WriteLine($"\nКритична помилка програми: {ex.Message}");
             }
         }
+    }
+
+    private static void ManageRequests(IRequestService requestService)
+    {
+        {
+            Console.WriteLine("\n--- Запити Клієнтів ---");
+            Console.WriteLine("1. Створити новий запит");
+            Console.WriteLine("2. Переглянути запити клієнта");
+            Console.Write("Ваш вибір: ");
+
+            if (!int.TryParse(Console.ReadLine(), out int choice)) return;
+
+            if (choice == 1)
+            {
+                Console.WriteLine("Введіть ID Клієнта:");
+                if (!int.TryParse(Console.ReadLine(), out int clientId)) return;
+
+                Console.WriteLine("Тип поліса (1=Авто, 2=Медичне, 3=Майно):");
+                int typeChoice = int.Parse(Console.ReadLine());
+                PolicyTypes type = (PolicyTypes)(typeChoice - 1);
+
+                Console.WriteLine("Бажана сума покриття:");
+                decimal amount = decimal.Parse(Console.ReadLine());
+                
+                Console.WriteLine("Бажаний строк дії в місяцях");
+                int durationInMonths = int.Parse(Console.ReadLine());
+
+                requestService.CreateRequest(clientId, type, amount, durationInMonths);
+                Console.WriteLine("Запит успішно збережено!");
+            }
+            else if (choice == 2)
+            {
+                Console.WriteLine("Введіть ID Клієнта:");
+                if (!int.TryParse(Console.ReadLine(), out int clientId)) return;
+
+                var requests = requestService.GetClientRequests(clientId);
+                if (requests.Count == 0)
+                {
+                    Console.WriteLine("У цього клієнта немає запитів.");
+                    return;
+                }
+                foreach (var req in requests)
+                {
+                    Console.WriteLine(
+                        $"[Дата: {req.CreationDate:d}] Тип: {req.PolicyType} | Сума: {req.DesiredCoverageAmount} | Термін: {req.DurationInMonths}");
+                }
+            }
+        }
+    }
+    
+    private static void ShowAnalytics(IAnalyticsService service)
+    {
+        Console.WriteLine("\n=== АНАЛІТИКА КОМПАНІЇ ===");
+        
+        Console.WriteLine($"Активних полісів: {service.GetActivePolicyCount()}");
+        Console.WriteLine($"Загальні виплати: {service.GetTotalPayouts():0.00} грн");
+        Console.WriteLine($"Чистий дохід:     {service.GetCompanyRevenue():0.00} грн");
+        
+        var start = DateTime.Now.AddDays(-30);
+        var end = DateTime.Now;
+        int recentPolicies = service.GetClaimsByPeriod(start, end);
+        Console.WriteLine($"Страхових подій (останні 30 днів): {recentPolicies}");
+        
+        Console.WriteLine("\n--- Статистика за типами страхування ---");
+        var typeStats = service.GetPolicyStatsByType();
+        if (typeStats.Count == 0) Console.WriteLine("Даних немає.");
+        foreach (var stat in typeStats)
+        {
+            Console.WriteLine($"- {stat.Key}: {stat.Value} шт.");
+        }
+        
+        Console.WriteLine("\n--- Ефективність Агентів ---");
+        var agentStats = service.GetAgentPerfomanceStats();
+        if (agentStats.Count == 0) Console.WriteLine("Інформація відсутня.");
+        foreach (var line in agentStats)
+        {
+            Console.WriteLine(line);
+        }
+        Console.WriteLine("===========================");
     }
     
     /// <summary>

@@ -22,3 +22,27 @@ C:\Users\cybernetic frog\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9
 C:\Users\cybernetic frog\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ConsoleUI.pdb
 C:\Users\cybernetic frog\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ConsoleUI.genruntimeconfig.cache
 C:\Users\cybernetic frog\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ref\ConsoleUI.dll
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\bin\Debug\net9.0\ConsoleUI.exe
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\bin\Debug\net9.0\ConsoleUI.deps.json
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\bin\Debug\net9.0\ConsoleUI.runtimeconfig.json
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\bin\Debug\net9.0\ConsoleUI.dll
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\bin\Debug\net9.0\ConsoleUI.pdb
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\bin\Debug\net9.0\Newtonsoft.Json.dll
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\bin\Debug\net9.0\BusinessLogic.dll
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\bin\Debug\net9.0\Domain.dll
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\bin\Debug\net9.0\Persistence.dll
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\bin\Debug\net9.0\BusinessLogic.pdb
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\bin\Debug\net9.0\Domain.pdb
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\bin\Debug\net9.0\Persistence.pdb
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ConsoleUI.csproj.AssemblyReference.cache
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ConsoleUI.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ConsoleUI.AssemblyInfoInputs.cache
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ConsoleUI.AssemblyInfo.cs
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ConsoleUI.csproj.CoreCompileInputs.cache
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ConsoleUI.sourcelink.json
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ConsoleUI.csproj.Up2Date
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ConsoleUI.dll
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\refint\ConsoleUI.dll
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ConsoleUI.pdb
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ConsoleUI.genruntimeconfig.cache
+C:\Users\boiko\RiderProjects\InsuranceCompany\ConsoleUI\obj\Debug\net9.0\ref\ConsoleUI.dll

@@ -1,40 +1,42 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\ConsoleUI\\ConsoleUI.csproj": {}
+    "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\ConsoleUI\\ConsoleUI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\BusinessLogic\\BusinessLogic.csproj": {
+    "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\BusinessLogic\\BusinessLogic.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\BusinessLogic\\BusinessLogic.csproj",
+        "projectUniqueName": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\BusinessLogic\\BusinessLogic.csproj",
         "projectName": "BusinessLogic",
-        "projectPath": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\BusinessLogic\\BusinessLogic.csproj",
-        "packagesPath": "C:\\Users\\cybernetic frog\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\BusinessLogic\\obj\\",
+        "projectPath": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\BusinessLogic\\BusinessLogic.csproj",
+        "packagesPath": "C:\\Users\\boiko\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\BusinessLogic\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\cybernetic frog\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
+          "C:\\Users\\boiko\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj": {
-                "projectPath": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj"
+              "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj": {
+                "projectPath": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj"
               },
-              "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Persistence\\Persistence.csproj": {
-                "projectPath": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Persistence\\Persistence.csproj"
+              "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Persistence\\Persistence.csproj": {
+                "projectPath": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Persistence\\Persistence.csproj"
               }
             }
           }
@@ -49,7 +51,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -70,41 +72,43 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Users\\cybernetic frog\\.dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\ConsoleUI\\ConsoleUI.csproj": {
+    "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\ConsoleUI\\ConsoleUI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\ConsoleUI\\ConsoleUI.csproj",
+        "projectUniqueName": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\ConsoleUI\\ConsoleUI.csproj",
         "projectName": "ConsoleUI",
-        "projectPath": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\ConsoleUI\\ConsoleUI.csproj",
-        "packagesPath": "C:\\Users\\cybernetic frog\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\ConsoleUI\\obj\\",
+        "projectPath": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\ConsoleUI\\ConsoleUI.csproj",
+        "packagesPath": "C:\\Users\\boiko\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\ConsoleUI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\cybernetic frog\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
+          "C:\\Users\\boiko\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\BusinessLogic\\BusinessLogic.csproj": {
-                "projectPath": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\BusinessLogic\\BusinessLogic.csproj"
+              "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\BusinessLogic\\BusinessLogic.csproj": {
+                "projectPath": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\BusinessLogic\\BusinessLogic.csproj"
               },
-              "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj": {
-                "projectPath": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj"
+              "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj": {
+                "projectPath": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj"
               }
             }
           }
@@ -119,7 +123,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -140,30 +144,32 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Users\\cybernetic frog\\.dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj": {
+    "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj",
+        "projectUniqueName": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj",
         "projectName": "Domain",
-        "projectPath": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj",
-        "packagesPath": "C:\\Users\\cybernetic frog\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Domain\\obj\\",
+        "projectPath": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj",
+        "packagesPath": "C:\\Users\\boiko\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\cybernetic frog\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
+          "C:\\Users\\boiko\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -182,7 +188,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -203,38 +209,40 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Users\\cybernetic frog\\.dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Persistence\\Persistence.csproj": {
+    "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Persistence\\Persistence.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Persistence\\Persistence.csproj",
+        "projectUniqueName": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Persistence\\Persistence.csproj",
         "projectName": "Persistence",
-        "projectPath": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Persistence\\Persistence.csproj",
-        "packagesPath": "C:\\Users\\cybernetic frog\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Persistence\\obj\\",
+        "projectPath": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Persistence\\Persistence.csproj",
+        "packagesPath": "C:\\Users\\boiko\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Persistence\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\cybernetic frog\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config"
+          "C:\\Users\\boiko\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj": {
-                "projectPath": "C:\\Users\\cybernetic frog\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj"
+              "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj": {
+                "projectPath": "C:\\Users\\boiko\\RiderProjects\\InsuranceCompany\\Domain\\Domain.csproj"
               }
             }
           }
@@ -249,7 +257,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -276,7 +284,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Users\\cybernetic frog\\.dotnet\\sdk\\9.0.306/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
