@@ -29,7 +29,7 @@ public class JsonRepository<T> : IRepository<T> where T : BaseEntity
         LoadData();
     }
 
-    /// <summary>
+    /// <summary>Ы
     /// Loads data from the JSON file into the in-memory list.
     /// </summary>
     private void LoadData()

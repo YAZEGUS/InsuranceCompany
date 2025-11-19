@@ -20,6 +20,7 @@ public static class Program
     private static readonly IRepository<Agent> AgentRepository; 
     private static readonly IRequestService RequestService;
     private static readonly IAnalyticsService AnalyticsService;
+    private static readonly IPaymentService PaymentService; // !!! ЕТАП 4: НОВИЙ СЕРВІС
 
     /// <summary>
     /// Static constructor to set up repositories and services (Dependency Injection).
@@ -33,15 +34,21 @@ public static class Program
         IRepository<Claim> claimRepository = new JsonRepository<Claim>("claims.json");
         AgentRepository = new JsonRepository<Agent>("agents.json"); 
         IRepository<Request> requestRepository = new JsonRepository<Request>("requests.json");
+        IRepository<Payment> paymentRepository = new JsonRepository<Payment>("payments.json"); // !!! ЕТАП 4: НОВИЙ РЕПОЗИТОРІЙ
         
         // Ініціалізація залежностей (Business Logic Layer)
         // Передаємо репозиторії до сервісів
         ClientService = new ClientService(clientRepository, policyRepository);
         PolicyService = new PolicyService(policyRepository, ClientService, AgentRepository);
         ClaimService = new ClaimService(claimRepository, policyRepository, ClientService);
-        RequestService = new RequestService(requestRepository);
+        
+        // !!! ЕТАП 4: ОНОВЛЕННЯ RequestService (потребує PolicyRepository для підбору)
+        RequestService = new RequestService(requestRepository, policyRepository); 
+
         AnalyticsService = new AnalyticsService(policyRepository, claimRepository, AgentRepository);
         
+        // !!! ЕТАП 4: ІНІЦІАЛІЗАЦІЯ PaymentService
+        PaymentService = new PaymentService(paymentRepository, policyRepository);
     }
 
     /// <summary>
@@ -55,13 +62,14 @@ public static class Program
         while (true)
         {
             Console.WriteLine("\n--- ГОЛОВНЕ МЕНЮ ---");
-            Console.WriteLine("Натисніть 1 для управління клієнтами (CRUD)");
-            Console.WriteLine("Натисніть 2 для управління полісами (CRUD/Status)");
-            Console.WriteLine("Натисніть 3 для управління подіями (Створення/Status)");
-            Console.WriteLine("Натисніть 4 для пошуку полісів (Етап 2)");
-            Console.WriteLine("Натисніть 5 для управління агентами (CRUD)");
+            Console.WriteLine("Натисніть 1 для управління клієнтами ");
+            Console.WriteLine("Натисніть 2 для управління полісами ");
+            Console.WriteLine("Натисніть 3 для управління подіями ");
+            Console.WriteLine("Натисніть 4 для пошуку полісів ");
+            Console.WriteLine("Натисніть 5 для управління агентами ");
             Console.WriteLine("Натисніть 6 для запитів клієнтів");
             Console.WriteLine("Натисніть 7 для статистики та аналітики");
+            Console.WriteLine("Натисніть 8 для управління платежами (Етап 4)"); // !!! НОВИЙ ПУНКТ
             Console.WriteLine("Натисніть 0 для виходу");
             Console.Write("Ваш вибір: ");
             
@@ -96,6 +104,9 @@ public static class Program
                     case 7:
                         ShowAnalytics(AnalyticsService);
                         break;
+                    case 8: // !!! НОВИЙ CASE
+                        ManagePayments(PaymentService);
+                        break;
                     case 0:
                         return; 
                     default:
@@ -110,13 +121,75 @@ public static class Program
             }
         }
     }
+    
+    // !!! ЕТАП 4: НОВИЙ МЕТОД ДЛЯ УПРАВЛІННЯ ПЛАТЕЖАМИ
+    private static void ManagePayments(IPaymentService paymentService)
+    {
+        Console.WriteLine("\n--- Управління Платежами ---");
+        Console.WriteLine("1. Зафіксувати Внесок (Premium/Contribution)");
+        Console.WriteLine("2. Зафіксувати Виплату (Payout)");
+        Console.WriteLine("3. Переглянути платежі за полісом");
+        Console.Write("Ваш вибір: ");
 
+        if (!int.TryParse(Console.ReadLine(), out int choice)) return;
+
+        try
+        {
+            if (choice == 1 || choice == 2)
+            {
+                Console.Write("Введіть Id Поліса: ");
+                if (!int.TryParse(Console.ReadLine(), out int policyId)) return;
+
+                Console.Write("Введіть Суму: ");
+                if (!decimal.TryParse(Console.ReadLine(), out decimal amount)) return;
+
+                PaymentType type = choice == 1 ? PaymentType.Contribution : PaymentType.Payout;
+
+                var newPayment = paymentService.RecordPayment(policyId, amount, type);
+                Console.WriteLine($"\nПлатіж ({type}) успішно зафіксовано! Id: {newPayment.Id}, Сума: {newPayment.Amount:0.00} ₴");
+            }
+            else if (choice == 3)
+            {
+                Console.Write("Введіть Id Поліса для перегляду платежів: ");
+                if (!int.TryParse(Console.ReadLine(), out int policyId)) return;
+
+                var payments = paymentService.GetPaymentsByPolicy(policyId);
+                Console.WriteLine($"\n--- Платежі для Поліса {policyId} ---");
+                if (payments.Count == 0)
+                {
+                    Console.WriteLine("Платежів не знайдено.");
+                    return;
+                }
+
+                foreach (var p in payments.OrderBy(p => p.Date))
+                {
+                    string sign = p.Type == PaymentType.Contribution ? "+" : "-";
+                    Console.WriteLine($"[Id: {p.Id}] {p.Date:yyyy-MM-dd HH:mm} | Тип: {p.Type} | Сума: {sign}{p.Amount:0.00} ₴");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Некоректний вибір.");
+            }
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"Помилка при обробці платежу: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Непередбачена помилка: {ex.Message}");
+        }
+    }
+
+    // !!! ЕТАП 4: ОНОВЛЕНИЙ МЕТОД ДЛЯ УПРАВЛІННЯ ЗАПИТАМИ
     private static void ManageRequests(IRequestService requestService)
     {
         {
             Console.WriteLine("\n--- Запити Клієнтів ---");
             Console.WriteLine("1. Створити новий запит");
             Console.WriteLine("2. Переглянути запити клієнта");
+            Console.WriteLine("3. Підібрати поліси за запитом"); // !!! НОВИЙ ПУНКТ
             Console.Write("Ваш вибір: ");
 
             if (!int.TryParse(Console.ReadLine(), out int choice)) return;
@@ -126,9 +199,9 @@ public static class Program
                 Console.WriteLine("Введіть ID Клієнта:");
                 if (!int.TryParse(Console.ReadLine(), out int clientId)) return;
 
-                Console.WriteLine("Тип поліса (1=Авто, 2=Медичне, 3=Майно):");
+                Console.WriteLine("Тип поліса (0=CarInsurance, 1=MedicalInsurance, 2=PropertyInsurance):");
                 int typeChoice = int.Parse(Console.ReadLine());
-                PolicyTypes type = (PolicyTypes)(typeChoice - 1);
+                PolicyTypes type = (PolicyTypes)(typeChoice);
 
                 Console.WriteLine("Бажана сума покриття:");
                 decimal amount = decimal.Parse(Console.ReadLine());
@@ -153,8 +226,40 @@ public static class Program
                 foreach (var req in requests)
                 {
                     Console.WriteLine(
-                        $"[Дата: {req.CreationDate:d}] Тип: {req.PolicyType} | Сума: {req.DesiredCoverageAmount} | Термін: {req.DurationInMonths}");
+                        $"[ID: {req.Id}] [Дата: {req.CreationDate:d}] Тип: {req.PolicyType} | Сума: {req.DesiredCoverageAmount:0.00} ₴ | Термін: {req.DurationInMonths} міс.");
                 }
+            }
+            else if (choice == 3) // !!! ЛОГІКА ПІДБОРУ
+            {
+                Console.WriteLine("--- Підбір Полісів за Запитом ---");
+                Console.Write("Введіть ID Запиту для підбору: ");
+                if (!int.TryParse(Console.ReadLine(), out int requestId)) return;
+
+                try
+                {
+                    var matchingPolicies = requestService.MatchRequestToPolicies(requestId);
+                    Console.WriteLine($"\nЗнайдено {matchingPolicies.Count} відповідних активних полісів:");
+
+                    if (matchingPolicies.Count == 0)
+                    {
+                        Console.WriteLine("Не знайдено активних полісів, що відповідають критеріям запиту.");
+                    }
+                    else
+                    {
+                        foreach (var policy in matchingPolicies)
+                        {
+                            Console.WriteLine($"- Id: {policy.Id} | Тип: {policy.PolicyType} | Покриття: {policy.CoverageAmount:0.00} ₴ | Ціна: {policy.Price:0.00} ₴");
+                        }
+                    }
+                }
+                catch (ArgumentException ex)
+                {
+                    Console.WriteLine($"Помилка підбору: {ex.Message}");
+                }
+            }
+            else
+            {
+                 Console.WriteLine("Некоректний вибір.");
             }
         }
     }
@@ -320,13 +425,13 @@ public static class Program
                     agentId = agentValue;
                 }
 
-                Console.WriteLine("Введіть тип поліса (1=Авто, 2=Медичне, 3=Майно):");
-                if (!int.TryParse(Console.ReadLine(), out int typeChoice) || !Enum.IsDefined(typeof(PolicyTypes), typeChoice - 1))
+                Console.WriteLine("Введіть тип поліса (0=CarInsurance, 1=MedicalInsurance, 2=PropertyInsurance):");
+                if (!int.TryParse(Console.ReadLine(), out int typeChoice) || !Enum.IsDefined(typeof(PolicyTypes), typeChoice))
                 {
                     Console.WriteLine("Некоректний вибір типу поліса.");
                     return;
                 }
-                PolicyTypes policyType = (PolicyTypes)(typeChoice - 1); 
+                PolicyTypes policyType = (PolicyTypes)typeChoice; 
 
                 Console.WriteLine("Введіть дату початку (напр., 2025-01-30):");
                 if (!DateTime.TryParse(Console.ReadLine(), out DateTime startDate))
@@ -595,11 +700,11 @@ public static class Program
         decimal? minPrice = null;
         decimal? maxPrice = null;
 
-        Console.WriteLine("Фільтр за типом поліса (1=Авто, 2=Медичне, 3=Майно, або ENTER для будь-якого):");
+        Console.WriteLine("Фільтр за типом поліса (0=CarInsurance, 1=MedicalInsurance, 2=PropertyInsurance, або ENTER для будь-якого):");
         string typeInput = Console.ReadLine();
-        if (int.TryParse(typeInput, out int typeChoice) && Enum.IsDefined(typeof(PolicyTypes), typeChoice - 1))
+        if (int.TryParse(typeInput, out int typeChoice) && Enum.IsDefined(typeof(PolicyTypes), typeChoice))
         {
-            type = (PolicyTypes)(typeChoice - 1);
+            type = (PolicyTypes)typeChoice;
         }
         
         
