@@ -1,9 +1,8 @@
+using BusinessLogic.Interfaces;
 using Domain;
 using Persistence;
-using System;
-using System.Linq;
 
-namespace BusinessLogic;
+namespace BusinessLogic.Services;
 
 /// <summary>
 /// Implements the IClaimService interface.

@@ -1,6 +1,6 @@
 using Domain;
 
-namespace BusinessLogic;
+namespace BusinessLogic.Interfaces;
 
 public interface IAnalyticsService
 {

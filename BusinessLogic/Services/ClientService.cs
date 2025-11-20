@@ -1,10 +1,10 @@
-using Persistence;
+using BusinessLogic.Interfaces;
 using Domain;
-using System.Collections.Generic;
-using System; 
-using System.Linq; // Потрібен для Any()
+using Persistence;
 
-namespace BusinessLogic;
+// Потрібен для Any()
+
+namespace BusinessLogic.Services;
 
 /// <summary>
 /// Implements the IClientService interface.

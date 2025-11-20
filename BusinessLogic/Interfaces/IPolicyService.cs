@@ -1,8 +1,6 @@
 using Domain;
-using System;
-using System.Collections.Generic;
 
-namespace BusinessLogic;
+namespace BusinessLogic.Interfaces;
 
 /// <summary>
 /// Contract for the Policy Service.

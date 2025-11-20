@@ -1,10 +1,8 @@
+using BusinessLogic.Interfaces;
 using Domain;
 using Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace BusinessLogic;
+namespace BusinessLogic.Services;
 
 public class RequestService : IRequestService
 {

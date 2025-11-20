@@ -1,7 +1,8 @@
+using BusinessLogic.Interfaces;
 using Domain;
 using Persistence;
 
-namespace BusinessLogic;
+namespace BusinessLogic.Services;
 
 public class AnalyticsService : IAnalyticsService
 {

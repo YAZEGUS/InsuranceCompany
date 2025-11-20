@@ -1,7 +1,6 @@
 using Domain;
-using System;
 
-namespace BusinessLogic;
+namespace BusinessLogic.Interfaces;
 
 /// <summary>
 /// Contract for the Claim Service.

@@ -39,6 +39,12 @@ public class Policy : BaseEntity
     /// The cost (premium) of the policy, calculated by Business Logic.
     /// </summary>
     public decimal Price { get; set; }
+    
+    // ДОДАНО: Валюта поліса
+    /// <summary>
+    /// The currency of the policy (e.g., UAH, USD).
+    /// </summary>
+    public string Currency { get; set; } = "UAH";
 
     /// <summary>
     /// The current status of the policy (e.g., Active, Completed, Cancelled).

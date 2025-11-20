@@ -4,6 +4,8 @@ using Persistence;
 using System;
 using System.Linq; 
 using System.Collections.Generic;
+using BusinessLogic.Interfaces;
+using BusinessLogic.Services;
 
 namespace ConsoleUI;
 
@@ -12,7 +14,7 @@ namespace ConsoleUI;
 /// Manages dependency injection setup and the main application loop.
 /// </summary>
 public static class Program
-{
+{   
     // --- Service fields for Dependency Injection ---
     private static readonly IClientService ClientService;
     private static readonly IPolicyService PolicyService;
@@ -21,26 +23,34 @@ public static class Program
     private static readonly IRequestService RequestService;
     private static readonly IAnalyticsService AnalyticsService;
     private static readonly IPaymentService PaymentService; // !!! ЕТАП 4: НОВИЙ СЕРВІС
+    
+    // !!! ЕТАП 5: Поля для API
+    private static readonly HttpClient HttpClient;
+    private static readonly ICurrencyRateService CurrencyRateService;
 
     /// <summary>
     /// Static constructor to set up repositories and services (Dependency Injection).
     /// </summary>
     static Program()
     {
+        var dbContext = new AppDbContext();
+        HttpClient = new HttpClient(); 
+        
         // Ініціалізація Repositories (Persistence Layer)
         // Створюємо репозиторії як локальні змінні для DI
-        IRepository<Client> clientRepository = new JsonRepository<Client>("clients.json");
-        IRepository<Policy> policyRepository = new JsonRepository<Policy>("policies.json");
-        IRepository<Claim> claimRepository = new JsonRepository<Claim>("claims.json");
-        AgentRepository = new JsonRepository<Agent>("agents.json"); 
-        IRepository<Request> requestRepository = new JsonRepository<Request>("requests.json");
-        IRepository<Payment> paymentRepository = new JsonRepository<Payment>("payments.json"); // !!! ЕТАП 4: НОВИЙ РЕПОЗИТОРІЙ
+        IRepository<Client> clientRepository = new SqlRepository<Client>(dbContext);
+        IRepository<Policy> policyRepository = new SqlRepository<Policy>(dbContext);
+        IRepository<Claim> claimRepository = new SqlRepository<Claim>(dbContext);
+        AgentRepository = new SqlRepository<Agent>(dbContext); 
+        IRepository<Request> requestRepository = new SqlRepository<Request>(dbContext);
+        IRepository<Payment> paymentRepository = new SqlRepository<Payment>(dbContext); // !!! ЕТАП 4: НОВИЙ РЕПОЗИТОРІЙ
         
         // Ініціалізація залежностей (Business Logic Layer)
         // Передаємо репозиторії до сервісів
         ClientService = new ClientService(clientRepository, policyRepository);
         PolicyService = new PolicyService(policyRepository, ClientService, AgentRepository);
         ClaimService = new ClaimService(claimRepository, policyRepository, ClientService);
+        CurrencyRateService = new CurrencyRateService(HttpClient);
         
         // !!! ЕТАП 4: ОНОВЛЕННЯ RequestService (потребує PolicyRepository для підбору)
         RequestService = new RequestService(requestRepository, policyRepository); 
@@ -48,14 +58,14 @@ public static class Program
         AnalyticsService = new AnalyticsService(policyRepository, claimRepository, AgentRepository);
         
         // !!! ЕТАП 4: ІНІЦІАЛІЗАЦІЯ PaymentService
-        PaymentService = new PaymentService(paymentRepository, policyRepository);
+        PaymentService = new PaymentService(paymentRepository, policyRepository, CurrencyRateService);
     }
 
     /// <summary>
     /// The main entry point for the application.
     /// Runs the main menu loop.
     /// </summary>
-    static void Main()
+    static async Task Main()
     {
         Console.WriteLine("--- Система Управління Страхуванням ---");
         
@@ -87,7 +97,7 @@ public static class Program
                         ManageClients(ClientService);
                         break;
                     case 2:
-                        ManagePolicies(PolicyService);
+                        await ManagePolicies(PolicyService);
                         break;
                     case 3:
                         ManageClaims(ClaimService); 
@@ -105,7 +115,7 @@ public static class Program
                         ShowAnalytics(AnalyticsService);
                         break;
                     case 8: // !!! НОВИЙ CASE
-                        ManagePayments(PaymentService);
+                        await ManagePayments(PaymentService);
                         break;
                     case 0:
                         return; 
@@ -122,12 +132,11 @@ public static class Program
         }
     }
     
-    // !!! ЕТАП 4: НОВИЙ МЕТОД ДЛЯ УПРАВЛІННЯ ПЛАТЕЖАМИ
-    private static void ManagePayments(IPaymentService paymentService)
+ private static async Task ManagePayments(IPaymentService paymentService)
     {
         Console.WriteLine("\n--- Управління Платежами ---");
-        Console.WriteLine("1. Зафіксувати Внесок (Premium/Contribution)");
-        Console.WriteLine("2. Зафіксувати Виплату (Payout)");
+        Console.WriteLine("1. Зафіксувати Внесок (Premium) - Можна в валюті!");
+        Console.WriteLine("2. Зафіксувати Виплату (Payout) - Можна в валюті!");
         Console.WriteLine("3. Переглянути платежі за полісом");
         Console.Write("Ваш вибір: ");
 
@@ -140,21 +149,32 @@ public static class Program
                 Console.Write("Введіть Id Поліса: ");
                 if (!int.TryParse(Console.ReadLine(), out int policyId)) return;
 
-                Console.Write("Введіть Суму: ");
+                Console.Write("Введіть Суму платежу: ");
                 if (!decimal.TryParse(Console.ReadLine(), out decimal amount)) return;
+
+                // !!! ЕТАП 5: Запитуємо валюту
+                Console.Write("Введіть Валюту (UAH, USD, EUR): ");
+                string currency = Console.ReadLine()?.Trim().ToUpper();
+                if (string.IsNullOrEmpty(currency)) currency = "UAH";
 
                 PaymentType type = choice == 1 ? PaymentType.Contribution : PaymentType.Payout;
 
-                var newPayment = paymentService.RecordPayment(policyId, amount, type);
-                Console.WriteLine($"\nПлатіж ({type}) успішно зафіксовано! Id: {newPayment.Id}, Сума: {newPayment.Amount:0.00} ₴");
+                Console.WriteLine("Обробка платежу через API курсів валют...");
+                
+                // Викликаємо асинхронний метод сервісу
+                var newPayment = await paymentService.RecordPaymentAsync(policyId, amount, type, currency);
+                
+                Console.WriteLine($"\n✅ Платіж успішно зафіксовано!");
+                Console.WriteLine($"   Сума внесена: {amount} {currency}");
+                Console.WriteLine($"   Зараховано в базу (UAH): {newPayment.Amount:0.00} ₴");
             }
             else if (choice == 3)
             {
-                Console.Write("Введіть Id Поліса для перегляду платежів: ");
+                Console.Write("Введіть Id Поліса: ");
                 if (!int.TryParse(Console.ReadLine(), out int policyId)) return;
 
                 var payments = paymentService.GetPaymentsByPolicy(policyId);
-                Console.WriteLine($"\n--- Платежі для Поліса {policyId} ---");
+                Console.WriteLine($"\n--- Історія платежів (Поліс #{policyId}) ---");
                 if (payments.Count == 0)
                 {
                     Console.WriteLine("Платежів не знайдено.");
@@ -164,21 +184,21 @@ public static class Program
                 foreach (var p in payments.OrderBy(p => p.Date))
                 {
                     string sign = p.Type == PaymentType.Contribution ? "+" : "-";
-                    Console.WriteLine($"[Id: {p.Id}] {p.Date:yyyy-MM-dd HH:mm} | Тип: {p.Type} | Сума: {sign}{p.Amount:0.00} ₴");
+                    Console.WriteLine($"[Id:{p.Id}] {p.Date:dd.MM.yyyy} | {p.Type} | {sign}{p.Amount:0.00} ₴");
                 }
             }
-            else
-            {
-                Console.WriteLine("Некоректний вибір.");
-            }
+        }
+        catch (HttpRequestException httpEx)
+        {
+            Console.WriteLine($"⛔ Помилка підключення до API: {httpEx.Message}");
         }
         catch (ArgumentException ex)
         {
-            Console.WriteLine($"Помилка при обробці платежу: {ex.Message}");
+            Console.WriteLine($"⚠️ Помилка валідації: {ex.Message}");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Непередбачена помилка: {ex.Message}");
+            Console.WriteLine($"❌ Помилка: {ex.Message}");
         }
     }
 
@@ -391,121 +411,64 @@ public static class Program
     /// <summary>
     /// Handles the Policy Management sub-menu.
     /// </summary>
-    private static void ManagePolicies(IPolicyService policyService)
+   private static async Task ManagePolicies(IPolicyService policyService)
     {
         Console.WriteLine("\n--- Управління Полісами ---");
-        Console.WriteLine("Натисніть 1, щоб додати поліс");
-        Console.WriteLine("Натисніть 2, щоб переглянути список полісів");
-        Console.WriteLine("Натисніть 3, щоб змінити статус поліса");
+        Console.WriteLine("1. Додати поліс");
+        Console.WriteLine("2. Список полісів");
+        Console.WriteLine("3. Змінити статус");
         Console.Write("Ваш вибір: ");
 
-        if (!int.TryParse(Console.ReadLine(), out int choice))
-        {
-            Console.WriteLine("Некоректне введення числа.");
-            return;
-        }
+        if (!int.TryParse(Console.ReadLine(), out int choice)) return;
         
         switch (choice)
         {
             case 1:
-                Console.WriteLine("Додавання поліса");
-                
-                Console.WriteLine("Введіть Id Клієнта:");
-                if (!int.TryParse(Console.ReadLine(), out int clientId))
-                {
-                    Console.WriteLine("Некоректний Id клієнта.");
-                    return;
-                }
-                
-                int? agentId = null;
-                Console.WriteLine("Введіть Id Агента (або Enter, якщо немає):");
-                string agentIdInput = Console.ReadLine();
-                if (!string.IsNullOrWhiteSpace(agentIdInput) && int.TryParse(agentIdInput, out int agentValue))
-                {
-                    agentId = agentValue;
-                }
+                Console.WriteLine("--- Створення поліса ---");
+                Console.Write("Id Клієнта: "); int clientId = int.Parse(Console.ReadLine());
+                Console.Write("Id Агента (Enter якщо немає): "); 
+                string agentIn = Console.ReadLine();
+                int? agentId = string.IsNullOrEmpty(agentIn) ? null : int.Parse(agentIn);
 
-                Console.WriteLine("Введіть тип поліса (0=CarInsurance, 1=MedicalInsurance, 2=PropertyInsurance):");
-                if (!int.TryParse(Console.ReadLine(), out int typeChoice) || !Enum.IsDefined(typeof(PolicyTypes), typeChoice))
-                {
-                    Console.WriteLine("Некоректний вибір типу поліса.");
-                    return;
-                }
-                PolicyTypes policyType = (PolicyTypes)typeChoice; 
-
-                Console.WriteLine("Введіть дату початку (напр., 2025-01-30):");
-                if (!DateTime.TryParse(Console.ReadLine(), out DateTime startDate))
-                {
-                    Console.WriteLine("Некоректний формат дати початку.");
-                    return;
-                }
-                
-                Console.WriteLine("Введіть дату закінчення (напр., 2026-01-30):");
-                if (!DateTime.TryParse(Console.ReadLine(), out DateTime endDate))
-                {
-                    Console.WriteLine("Некоректний формат дати закінчення.");
-                    return;
-                }
-                
-                Console.WriteLine("Введіть суму покриття:");
-                if (!decimal.TryParse(Console.ReadLine(), out decimal coverageAmount))
-                {
-                    Console.WriteLine("Некоректне введення суми покриття.");
-                    return;
-                }
+                Console.Write("Тип (0=Car, 1=Med, 2=Prop): "); PolicyTypes type = (PolicyTypes)int.Parse(Console.ReadLine());
+                Console.Write("Дата початку (yyyy-mm-dd): "); DateTime start = DateTime.Parse(Console.ReadLine());
+                Console.Write("Дата кінця (yyyy-mm-dd): "); DateTime end = DateTime.Parse(Console.ReadLine());
+                Console.Write("Сума покриття (UAH): "); decimal coverage = decimal.Parse(Console.ReadLine());
 
                 try
                 {
-                    var newPolicy = policyService.CreatePolicy(clientId, agentId, policyType, startDate, endDate, coverageAmount);
-                    Console.WriteLine($"Поліс створено! Id: {newPolicy.Id}, Вартість: {newPolicy.Price:0.00} ₴");
+                    var newPolicy = policyService.CreatePolicy(clientId, agentId, type, start, end, coverage);
+                    Console.WriteLine($"✅ Поліс створено! Id: {newPolicy.Id}, Ціна: {newPolicy.Price:0.00} UAH");
+                    
+                    // !!! API BONUS: Показуємо ціну в доларах для інформації
+                    try 
+                    {
+                        decimal rate = await CurrencyRateService.GetExchangeRateAsync("UAH", "USD");
+                        decimal priceUsd = newPolicy.Price * rate;
+                        Console.WriteLine($"ℹ️  Орієнтовна ціна в USD: ${priceUsd:0.00} (Курс: {rate})");
+                    }
+                    catch
+                    {
+                        Console.WriteLine("   (Не вдалося завантажити курс валют для довідки)");
+                    }
                 }
-                catch (ArgumentException ex) 
+                catch (Exception ex) 
                 {
-                    Console.WriteLine($"Помилка створення поліса: {ex.Message}");
+                    Console.WriteLine($"Помилка: {ex.Message}");
                 }
                 break;
                 
             case 2:
-                Console.WriteLine("--- Список полісів ---");
                 var policies = policyService.GetAllPolicies();
-                if (policies.Count == 0)
-                {
-                    Console.WriteLine("Полісів не знайдено.");
-                    break;
-                }
-                
-                foreach (var policy in policies)
-                {
-                    string agentInfo = policy.AgentId.HasValue ? $", Агент: {policy.AgentId}" : "";
-                    Console.WriteLine($"Id: {policy.Id}, Клієнт: {policy.ClientId}{agentInfo}, Тип: {policy.PolicyType}, Вартість: {policy.Price:0.00} ₴, Статус: {policy.Status}");
-                }
+                foreach (var p in policies)
+                    Console.WriteLine($"Id: {p.Id}, Type: {p.PolicyType}, Price: {p.Price:0.00}, Status: {p.Status}");
                 break;
             
             case 3:
-                Console.WriteLine("--- Зміна Статусу Поліса ---");
-                Console.WriteLine("Введіть Id Поліса:");
-                if (!int.TryParse(Console.ReadLine(), out int policyId))
-                {
-                    Console.WriteLine("Некоректний Id поліса.");
-                    return;
-                }
-
-                Console.WriteLine("Введіть новий статус (0=Активний, 1=Призупинено, 2=Завершено, 3=Скасовано):");
-                if (!int.TryParse(Console.ReadLine(), out int statusChoice) || !Enum.IsDefined(typeof(StatusTypes), statusChoice))
-                {
-                    Console.WriteLine("Некоректний вибір статусу.");
-                    return;
-                }
-                
-                try
-                {
-                    policyService.ChangePolicyStatus(policyId, (StatusTypes)statusChoice);
-                    Console.WriteLine($"Статус поліса {policyId} успішно змінено на {(StatusTypes)statusChoice}."); 
-                }
-                catch (ArgumentException ex) 
-                {
-                    Console.WriteLine($"Помилка зміни статусу: {ex.Message}");
-                }
+                Console.Write("Id Поліса: "); int pId = int.Parse(Console.ReadLine());
+                Console.Write("Статус (0-3): "); StatusTypes st = (StatusTypes)int.Parse(Console.ReadLine());
+                try { policyService.ChangePolicyStatus(pId, st); Console.WriteLine("Статус змінено."); }
+                catch (Exception ex) { Console.WriteLine(ex.Message); }
                 break;
         }
     }

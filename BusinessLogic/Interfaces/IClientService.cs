@@ -1,7 +1,6 @@
 using Domain;
-using System.Collections.Generic;
 
-namespace BusinessLogic;
+namespace BusinessLogic.Interfaces;
 
 /// <summary>
 /// Contract for the Client Service.
