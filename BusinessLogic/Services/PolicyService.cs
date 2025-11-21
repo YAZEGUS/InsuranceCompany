@@ -1,6 +1,7 @@
 using BusinessLogic.Interfaces;
 using Domain;
 using Persistence;
+using System.Linq; // Потрібен для Where, ToList
 
 namespace BusinessLogic.Services;
 
@@ -121,8 +122,9 @@ public class PolicyService : IPolicyService
         return true;
     }
 
+    // !!! ВИПРАВЛЕНО: Додано параметр agentId
     public List<Policy> SearchPolicies(PolicyTypes? type = null, int? clientId = null, 
-        StatusTypes? status = null, decimal? minPrice = null, decimal? maxPrice = null)
+        StatusTypes? status = null, decimal? minPrice = null, decimal? maxPrice = null, int? agentId = null)
     {
         IEnumerable<Policy> query = _policyRepository.GetAll();
         
@@ -149,6 +151,12 @@ public class PolicyService : IPolicyService
         if (maxPrice.HasValue)
         {
             query = query.Where(p => p.Price <= maxPrice.Value);
+        }
+        
+        // !!! НОВЕ: Фільтрація за AgentId
+        if (agentId.HasValue)
+        {
+            query = query.Where(p => p.AgentId == agentId.Value);
         }
 
         return query.ToList();
