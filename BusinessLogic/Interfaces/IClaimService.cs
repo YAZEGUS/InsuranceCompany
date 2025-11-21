@@ -1,4 +1,5 @@
 using Domain;
+using System.Collections.Generic; // Потрібен для List
 
 namespace BusinessLogic.Interfaces;
 
@@ -9,6 +10,12 @@ namespace BusinessLogic.Interfaces;
 public interface IClaimService
 {
     /// <summary>
+    /// Gets a list of all claims (використовується для відображення в ConsoleUI).
+    /// </summary>
+    /// <returns>A list of all claims.</returns>
+    List<Claim> GetAll();
+
+    /// <summary>
     /// Creates a new claim.
     /// </summary>
     /// <param name="policyId">The Id of the policy being claimed against.</param>
@@ -18,7 +25,6 @@ public interface IClaimService
     /// <returns>The newly created claim with its generated Id.</returns>
     Claim CreateClaim(int policyId, DateTime date, string description, decimal payoutAmount);
 
-    // ЕТАП 2
     /// <summary>
     /// Changes the status of an existing claim.
     /// </summary>
