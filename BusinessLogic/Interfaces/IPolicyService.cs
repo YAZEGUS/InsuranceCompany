@@ -1,4 +1,5 @@
 using Domain;
+using System.Collections.Generic; // Потрібен для List
 
 namespace BusinessLogic.Interfaces;
 
@@ -18,7 +19,6 @@ public interface IPolicyService
     /// Creates a new insurance policy and calculates its price.
     /// </summary>
     /// <param name="clientId">The Id of the client purchasing the policy.</param>
-    // !!! ОНОВЛЕНО: Додано параметр agentId
     /// <param name="agentId">The Id of the agent who sold the policy (optional).</param>
     /// <param name="type">The type of insurance.</param>
     /// <param name="startDate">The policy start date.</param>
@@ -28,7 +28,6 @@ public interface IPolicyService
     Policy CreatePolicy(int clientId, int? agentId, PolicyTypes type, 
         DateTime startDate, DateTime endDate, decimal coverageAmount);
 
-    // ЕТАП 2
     /// <summary>
     /// Changes the status of an existing policy.
     /// </summary>
@@ -45,7 +44,9 @@ public interface IPolicyService
     /// <param name="status">Filter by status (optional).</param>
     /// <param name="minPrice">Minimum price in the range (optional).</param>
     /// <param name="maxPrice">Maximum price in the range (optional).</param>
+    /// <param name="agentId">Filter by agent Id (optional). </param>
     /// <returns>A list of policies matching the search criteria.</returns>
     List<Policy> SearchPolicies(PolicyTypes? type = null, int? clientId = null, 
-        StatusTypes? status = null, decimal? minPrice = null, decimal? maxPrice = null);
+        StatusTypes? status = null, decimal? minPrice = null, decimal? maxPrice = null,
+        int? agentId = null);
 }
