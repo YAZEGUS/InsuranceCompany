@@ -1,6 +1,7 @@
 using BusinessLogic.Interfaces;
 using Domain;
 using Persistence;
+using System.Collections.Generic; // Потрібен для List<Claim>
 
 namespace BusinessLogic.Services;
 
@@ -25,6 +26,12 @@ public class ClaimService : IClaimService
         _claimRepository = claimRepository;
         _policyRepository = policyRepository;
         _clientService = clientService;
+    }
+    
+    // !!! НОВЕ: Реалізація методу GetAll()
+    public List<Claim> GetAll()
+    {
+        return _claimRepository.GetAll();
     }
     
     public Claim CreateClaim(int policyId, DateTime date, string description, decimal payoutAmount)
