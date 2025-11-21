@@ -1,22 +1,18 @@
 using BusinessLogic.Interfaces;
 using Domain;
 using Persistence;
-using System.Linq; // Потрібен для Where, ToList
 
 namespace BusinessLogic.Services;
 
 /// <summary>
-/// Implements the IPolicyService interface.
-/// Contains business logic for managing policies, including price calculation.
+/// Реалізує інтерфейс IPolicyService. Містить бізнес-логіку для управління полісами.
 /// </summary>
 public class PolicyService : IPolicyService
 {
     private readonly IRepository<Policy> _policyRepository;
     private readonly IClientService _clientService; 
-    // !!! НОВЕ: Репозиторій для агентів для перевірки їхнього існування
     private readonly IRepository<Agent> _agentRepository; 
-
-    // !!! ЗМІНЕНО: Конструктор тепер приймає AgentRepository
+    
     public PolicyService(IRepository<Policy> policyRepository, IClientService clientService, IRepository<Agent> agentRepository)
     {
         _policyRepository = policyRepository;
@@ -29,20 +25,19 @@ public class PolicyService : IPolicyService
         return _policyRepository.GetAll();
     }
     
-    // !!! ЗМІНЕНО: Додано параметр agentId
     public Policy CreatePolicy(int clientId, int? agentId, PolicyTypes type, DateTime startDate, DateTime endDate, decimal coverageAmount)
     {
         // 1. Перевірка існування клієнта
         var client = _clientService.GetClientById(clientId);
         if (client == null)
         {
-            throw new ArgumentException($"Client with Id={clientId} not found. Cannot create policy.");
+            throw new ArgumentException($"Клієнт з Id={clientId} не знайдено");
         }
 
         // 2. Валідація дат (Бізнес-правило, додане раніше)
         if (startDate >= endDate)
         {
-            throw new ArgumentException("Policy start date must be strictly before the end date.");
+            throw new ArgumentException("Дата початку полісу має бути строго раніше кінцевої дати.");
         }
         
         // !!! НОВЕ: Валідація Агента
@@ -51,7 +46,7 @@ public class PolicyService : IPolicyService
             var agent = _agentRepository.GetById(agentId.Value);
             if (agent == null)
             {
-                throw new ArgumentException($"Agent with Id={agentId.Value} not found. Cannot assign policy.");
+                throw new ArgumentException($"Агента з Id={agentId.Value} не знайдено.");
             }
         }
         
@@ -62,13 +57,13 @@ public class PolicyService : IPolicyService
         }
 
 
-        // Business Logic: Calculate the price
+        // Бізнес-логіка: Розрахунок вартості
         decimal price = CalculatePolicyPrice(coverageAmount, type);
         
         var newPolicy = new Policy
         {
             ClientId = clientId,
-            AgentId = agentId, // !!! ПРИСВОЄННЯ AgentId
+            AgentId = agentId,
             PolicyType = type,
             StartDate = startDate,
             EndDate = endDate,
@@ -105,7 +100,7 @@ public class PolicyService : IPolicyService
         var policy = _policyRepository.GetById(policyId);
         if (policy == null)
         {
-            throw new ArgumentException($"Policy with Id={policyId} not found.");
+            throw new ArgumentException($"Поліс з Id={policyId} не знайдено.");
         }
 
         // ЛОГІКА POLICY COUNT (виправлено раніше)

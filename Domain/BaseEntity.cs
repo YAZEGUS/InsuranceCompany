@@ -1,13 +1,13 @@
 namespace Domain;
 
 /// <summary>
-/// Abstract base class for all domain entities.
-/// Ensures that every entity has a unique identifier.
+/// Абстрактний базовий клас для всіх сутностей домену.
+/// Гарантує, що кожна сутність має унікальний ідентифікатор.
 /// </summary>
 public abstract class BaseEntity
 {
     /// <summary>
-    /// The unique identifier for the entity.
+    /// Унікальний ідентифікатор для сутності.
     /// </summary>
     public int Id { get; set; }
 }

@@ -1,6 +1,5 @@
 namespace Domain;
 
-// ЕТАП 2
 public enum ClaimStatusTypes
 {
     New,       // Нова

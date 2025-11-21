@@ -1,9 +1,10 @@
 using BusinessLogic.Interfaces;
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
-namespace BusinessLogic.Services
-{
-// Клас для десеріалізації відповіді API
+
+/// <summary>
+/// Клас для десеріалізації відповіді API
+/// </summary>
 public class ExchangeRateResponse
 {
     [JsonPropertyName("result")]
@@ -12,7 +13,9 @@ public class ExchangeRateResponse
     [JsonPropertyName("conversion_rate")]
     public decimal ConversionRate { get; set; }
 }
-
+/// <summary>
+/// Реалізація сервісу для отримання курсів валют із зовнішнього API.
+/// </summary>
 public class CurrencyRateService : ICurrencyRateService
 {
     private readonly HttpClient _httpClient;
@@ -22,7 +25,9 @@ public class CurrencyRateService : ICurrencyRateService
     {
         _httpClient = httpClient;
     }
-
+    /// <summary>
+    /// Асинхронно отримує обмінний курс з однієї валюти в іншу.
+    /// </summary>
     public async Task<decimal> GetExchangeRateAsync(string fromCurrency, string toCurrency)
     {
         try
@@ -40,9 +45,9 @@ public class CurrencyRateService : ICurrencyRateService
         }
         catch (Exception ex)
         {
+            // У разі помилки зв'язку чи парсингу, повертаємо 1.0m, але логуємо помилку
             Console.WriteLine($"Помилка інтеграції з API курсів валют: {ex.Message}");
             return 1.0m;
         }
     }
-}
 }

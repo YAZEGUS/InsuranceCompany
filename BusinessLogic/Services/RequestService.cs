@@ -4,12 +4,14 @@ using Persistence;
 
 namespace BusinessLogic.Services;
 
+/// <summary>
+/// Реалізує логіку управління запитами клієнтів та підбору полісів.
+/// </summary>
 public class RequestService : IRequestService
 {
     private readonly IRepository<Request> _requestRepository;
-    private readonly IRepository<Policy> _policyRepository; // !!! НОВЕ: Потрібне для підбору полісів
+    private readonly IRepository<Policy> _policyRepository; 
 
-    // !!! ОНОВЛЕНО: Додано IRepository<Policy> у конструктор
     public RequestService(IRepository<Request> requestRepository, IRepository<Policy> policyRepository)
     {
         _requestRepository = requestRepository;
@@ -41,18 +43,18 @@ public class RequestService : IRequestService
         return _requestRepository.GetAll().Where(r => r.ClientId == clientId).ToList();
     }
     
-    // !!! НОВИЙ МЕТОД ЕТАПУ 4: Логіка підбору полісів під запит клієнта
     /// <summary>
-    /// Finds existing active policies that approximately match the client's request based on type and coverage amount.
+    /// Знаходить існуючі активні поліси, які приблизно відповідають запиту клієнта (з толерантністю 10%).
     /// </summary>
-    /// <param name="requestId">The ID of the client request.</param>
-    /// <returns>A list of matching policies.</returns>
+    /// <param name="requestId">Ідентифікатор запиту клієнта.</param>
+    /// <returns>Список відповідних полісів.</returns>
     public List<Policy> MatchRequestToPolicies(int requestId)
     {
         var request = _requestRepository.GetById(requestId);
         
         if (request == null)
         {
+            // Помилка вже українською
             throw new ArgumentException($"Запит з Id={requestId} не знайдено.");
         }
 
@@ -61,10 +63,7 @@ public class RequestService : IRequestService
         decimal minCoverage = request.DesiredCoverageAmount * (1 - tolerance);
         decimal maxCoverage = request.DesiredCoverageAmount * (1 + tolerance);
 
-        // Фільтрація: 
-        // 1. Збіг за типом поліса
-        // 2. Покриття існуючого поліса має бути у діапазоні бажаного (з толерантністю)
-        // 3. Статус поліса має бути Активний (StatusTypes.Active)
+        // Фільтрація:
         return _policyRepository.GetAll()
             .Where(p => 
                 p.PolicyType == request.PolicyType && 

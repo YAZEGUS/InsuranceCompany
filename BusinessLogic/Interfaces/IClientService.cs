@@ -3,43 +3,37 @@ using Domain;
 namespace BusinessLogic.Interfaces;
 
 /// <summary>
-/// Contract for the Client Service.
-/// Defines business operations related to clients.
+/// Контракт для Сервісу клієнтів. Визначає бізнес-операції, пов'язані з клієнтами.
 /// </summary>
 public interface IClientService
 {
     /// <summary>
-    /// Gets a list of all clients.
+    /// Отримує список усіх клієнтів.
     /// </summary>
-    /// <returns>A list of clients.</returns>
     List<Client> GetAllClients();
     
-    // !!! ДОДАНО: Для ефективної перевірки існування клієнта в PolicyService
     /// <summary>
-    /// Gets a single client by its unique identifier.
+    /// Отримує єдиного клієнта за його унікальним ідентифікатором.
     /// </summary>
     Client GetClientById(int id);
     
     /// <summary>
-    /// Creates a new client.
+    /// Створює нового клієнта.
     /// </summary>
-    /// <param name="fullName">The client's full name.</param>
-    /// <param name="email">The client's email.</param>
-    /// <param name="clientType">The type of client.</param>
-    /// <returns>The newly created client with its generated Id.</returns>
+    /// <param name="fullName">Повне ім'я клієнта.</param>
+    /// <param name="email">Електронна пошта.</param>
+    /// <param name="clientType">Тип клієнта.</param>
+    /// <returns>Новостворений клієнт.</returns>
     Client CreateClient(string fullName, string email, ClientTypes clientType);
 
-    // ЕТАП 2
     /// <summary>
-    /// Updates the statistical fields (PolicyCount, TotalPayouts) for a client.
+    /// Оновлює статистичні поля клієнта (кількість полісів, виплати).
     /// </summary>
     void UpdateClientStats(int clientId, int policyChange = 0, decimal payoutChange = 0m);
 
-    // !!! НОВЕ: Метод для видалення клієнта
     /// <summary>
-    /// Deletes a client by its unique identifier.
+    /// Видаляє клієнта за його ідентифікатором.
     /// </summary>
-    /// <param name="clientId">The ID of the client to delete.</param>
-    /// <returns>True if deleted, false if not found or if the client has active policies.</returns>
+    /// <returns>True, якщо видалено, false, якщо не знайдено або має активні поліси.</returns>
     bool DeleteClient(int clientId);
 }

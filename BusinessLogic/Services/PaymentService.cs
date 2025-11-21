@@ -4,11 +4,14 @@ using Persistence;
 
 namespace BusinessLogic.Services;
 
+/// <summary>
+/// Реалізує логіку управління платежами, включаючи конвертацію валют.
+/// </summary>
 public class PaymentService : IPaymentService
 {
     private readonly IRepository<Payment> _paymentRepository;
     private readonly IRepository<Policy> _policyRepository; // Для перевірки існування поліса
-    private readonly ICurrencyRateService _currencyRateService; // Додано, Етап 5
+    private readonly ICurrencyRateService _currencyRateService; // Інтерфейс для конвертації валют (Етап 5)
 
     public PaymentService(IRepository<Payment> paymentRepository, IRepository<Policy> policyRepository, ICurrencyRateService currencyRateService)
     {
@@ -16,11 +19,8 @@ public class PaymentService : IPaymentService
         _policyRepository = policyRepository;
         _currencyRateService = currencyRateService;
     }
-
-    public Payment RecordPayment(int policyId, decimal amount, PaymentType type)
-    {
-        return RecordPaymentAsync(policyId, amount, type, "UAH").GetAwaiter().GetResult();
-    }
+    
+    /// <summary> Створює запис про новий платіж, конвертуючи суму, якщо валюти відрізняються. </summary>
     public async Task<Payment> RecordPaymentAsync(int policyId, 
         decimal amount, 
         PaymentType type, 
@@ -30,12 +30,12 @@ public class PaymentService : IPaymentService
         
         if (policy == null)
         {
-            throw new ArgumentException($"Policy with Id={policyId} not found.");
+            throw new ArgumentException($"Поліс з Id={policyId} не знайдено.");
         }
         
         if (amount <= 0)
         {
-            throw new ArgumentException("Amount must be positive.");
+            throw new ArgumentException("Сума має бути більшою за нуль.");
         }
 
         // 1. Визначення валюти поліса
@@ -48,7 +48,7 @@ public class PaymentService : IPaymentService
             // Виклик API через інтерфейс
             decimal rate = await _currencyRateService.GetExchangeRateAsync(paymentCurrency, policyCurrency);
             finalAmount = amount * rate;
-            Console.WriteLine($"Payment converted from {paymentCurrency} {amount} to {policyCurrency} {finalAmount} using rate {rate}.");
+            Console.WriteLine($"Платіж конвертовано з {paymentCurrency} {amount} на {policyCurrency} {finalAmount} курсом {rate}.");
         }
 
         // 3. Створення запису про платіж у валюті поліса
@@ -63,6 +63,7 @@ public class PaymentService : IPaymentService
         _paymentRepository.Add(newPayment);
         return newPayment;
     }
+    /// <summary> Отримує список усіх платежів, пов'язаних із конкретним полісом. </summary>
     public List<Payment> GetPaymentsByPolicy(int policyId)
     {
         return _paymentRepository.GetAll()

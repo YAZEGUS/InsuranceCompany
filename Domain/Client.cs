@@ -1,33 +1,32 @@
 namespace Domain;
 
 /// <summary>
-/// Represents a client of the insurance company (either an individual or a company).
+/// Представляє клієнта страхової компанії (фізичну або юридичну особу).
 /// </summary>
 public class Client : BaseEntity
 {
     /// <summary>
-    /// The full name of the individual or the name of the company.
+    /// Повне ім'я фізичної особи або назва компанії.
     /// </summary>
     public string FullName { get; set; }
 
     /// <summary>
-    /// Contact email address for the client.
+    /// Контактна електронна адреса клієнта.
     /// </summary>
     public string Email { get; set; }
 
     /// <summary>
-    /// The type of client (Individual or Company).
+    /// Тип клієнта (Фізична особа або Компанія).
     /// </summary>
     public ClientTypes ClientType { get; set; }
     
-    // ЕТАП 2
     /// <summary>
-    /// The total number of policies the client currently has.
+    /// Загальна кількість полісів, які наразі має клієнт.
     /// </summary>
     public int PolicyCount { get; set; } = 0;
 
     /// <summary>
-    /// The cumulative sum of all payouts received by the client.
+    /// Сукупна сума всіх виплат, отриманих клієнтом.
     /// </summary>
     public decimal TotalPayouts { get; set; } = 0m;
 }

@@ -1,46 +1,43 @@
 ﻿using Domain;
-using System.Collections.Generic;
 
 namespace Persistence;
 
 /// <summary>
-/// Defines the generic contract for a Repository.
-/// This interface specifies standard CRUD (Create, Read, Update, Delete) operations
-/// for any entity that inherits from BaseEntity.
+/// Визначає загальний контракт для Сховища (Repository).
 /// </summary>
-/// <typeparam name="T">The type of the entity, must inherit from BaseEntity.</typeparam>
+/// <typeparam name="T">Тип сутності, що має успадковувати BaseEntity.</typeparam>
 public interface IRepository<T> where T : BaseEntity
 {
     /// <summary>
-    /// Adds a new entity to the repository.
+    /// Додає нову сутність до сховища.
     /// </summary>
-    /// <param name="entity">The entity to add.</param>
+    /// <param name="entity">Сутність для додавання.</param>
     void Add(T entity);
 
     /// <summary>
-    /// Gets all entities from the repository.
+    /// Отримує всі сутності зі сховища.
     /// </summary>
-    /// <returns>A list of all entities.</returns>
+    /// <returns>Список усіх сутностей.</returns>
     List<T> GetAll();
 
     /// <summary>
-    /// Gets an entity by its unique identifier.
+    /// Отримує сутність за її унікальним ідентифікатором.
     /// </summary>
-    /// <param name="id">The ID of the entity.</param>
-    /// <returns>The found entity, or null if not found.</returns>
+    /// <param name="id">Ідентифікатор сутності.</param>
+    /// <returns>Знайдена сутність або null, якщо не знайдено.</returns>
     T? GetById(int id);
 
     /// <summary>
-    /// Updates an existing entity in the repository.
+    /// Оновлює існуючу сутність у сховищі.
     /// </summary>
-    /// <param name="entity">The entity to update.</param>
-    /// <returns>True if the entity was found and updated, false otherwise.</returns>
+    /// <param name="entity">Сутність для оновлення.</param>
+    /// <returns>True, якщо сутність знайдено та оновлено, інакше - false.</returns>
     bool Update(T entity);
 
     /// <summary>
-    /// Deletes an entity by its unique identifier.
+    /// Видаляє сутність за її унікальним ідентифікатором.
     /// </summary>
-    /// <param name="id">The ID of the entity to delete.</param>
-    /// <returns>True if the entity was found and deleted, false otherwise.</returns>
+    /// <param name="id">Ідентифікатор сутності для видалення.</param>
+    /// <returns>True, якщо сутність знайдено та видалено, інакше - false.</returns>
     bool Delete(int id);
 }

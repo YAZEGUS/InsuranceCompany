@@ -7,8 +7,8 @@ using Persistence;
 namespace BusinessLogic.Services;
 
 /// <summary>
-/// Implements the IClientService interface.
-/// Contains business logic for managing clients.
+/// Реалізує інтерфейс IClientService.
+/// Містить бізнес-логіку для управління клієнтами.
 /// </summary>
 public class ClientService : IClientService
 {
@@ -36,7 +36,7 @@ public class ClientService : IClientService
         // Додамо базову валідацію
         if (string.IsNullOrWhiteSpace(fullName))
         {
-            throw new ArgumentException("Full name cannot be empty.");
+            throw new ArgumentException("Ім'я не може бути порожнім");
         }
         
         // !!! НОВЕ: Валідація Email
@@ -61,7 +61,7 @@ public class ClientService : IClientService
         var client = _clientRepository.GetById(clientId);
         if (client == null)
         {
-            throw new ArgumentException($"Client with Id={clientId} not found for stats update.");
+            throw new ArgumentException($"Клієнта з Id={clientId} не знайдено");
         }
 
         if (policyChange != 0)
@@ -93,7 +93,7 @@ public class ClientService : IClientService
 
         if (hasActivePolicies)
         {
-            throw new ArgumentException($"Cannot delete client {clientId}. They still have active or paused policies.");
+            throw new ArgumentException($"Неможливо видалити клієнта {clientId}. Він все ще має активні або призупинені поліси.");
         }
         
         // Видаляємо клієнта, оскільки він чистий

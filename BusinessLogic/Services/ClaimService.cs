@@ -1,13 +1,12 @@
 using BusinessLogic.Interfaces;
 using Domain;
 using Persistence;
-using System.Collections.Generic; // Потрібен для List<Claim>
 
 namespace BusinessLogic.Services;
 
 /// <summary>
-/// Implements the IClaimService interface.
-/// Contains business logic for managing claims.
+/// Реалізує інтерфейс IClaimService.
+/// Містить бізнес-логіку для управління страховими подіями.
 /// </summary>
 public class ClaimService : IClaimService
 {
@@ -16,11 +15,11 @@ public class ClaimService : IClaimService
     private readonly IClientService _clientService; // Для оновлення статистики клієнта
 
     /// <summary>
-    /// Initializes a new instance of the ClaimService.
+    /// Ініціалізує новий екземпляр ClaimService.
     /// </summary>
-    /// <param name="claimRepository">The claim data repository.</param>
-    /// <param name="policyRepository">The policy data repository.</param>
-    /// <param name="clientService">The client service for updating client statistics.</param>
+    /// <param name="claimRepository">Репозиторій даних претензій.</param>
+    /// <param name="policyRepository">Репозиторій даних полісів.</param>
+    /// <param name="clientService">Сервіс клієнтів для оновлення статистики.</param>
     public ClaimService(IRepository<Claim> claimRepository, IRepository<Policy> policyRepository, IClientService clientService)
     {
         _claimRepository = claimRepository;
@@ -41,20 +40,20 @@ public class ClaimService : IClaimService
         // Перевірка існування поліса
         if (policy == null)
         {
-            throw new ArgumentException($"Policy with Id={policyId} not found.");
+            throw new ArgumentException($"Поліс з Id={policyId} не знайдено.");
         }
         
         // Перевірка, чи поліс не скасовано/завершено
         if (policy.Status == StatusTypes.Cancelled || policy.Status == StatusTypes.Completed)
         {
-            throw new ArgumentException($"Policy with Id={policyId} is {policy.Status} and cannot have new claims.");
+            throw new ArgumentException($"Поліс з Id={policyId} має статус {policy.Status} і не може мати нових заявок");
         }
         
         // Додаткова перевірка: сума виплати не може перевищувати покриття (хоча це може бути бізнес-рішенням)
         if (payoutAmount > policy.CoverageAmount)
         {
              // Це може бути попередженням, але для строгості залишимо виняток
-            throw new ArgumentException($"Payout amount ({payoutAmount:0.00}) exceeds policy coverage ({policy.CoverageAmount:0.00}).");
+            throw new ArgumentException($"Сума виплати {payoutAmount:0.00} перевищує покриття полісу {policy.CoverageAmount:0.00}");
         }
 
         var newClaim = new Claim

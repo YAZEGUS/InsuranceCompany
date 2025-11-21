@@ -3,51 +3,52 @@ using System;
 namespace Domain;
 
 /// <summary>
-/// Defines the structure for an insurance policy, extending BaseEntity.
+/// Визначає структуру страхового поліса, розширюючи BaseEntity.
 /// </summary>
 public class Policy : BaseEntity
 {
     /// <summary>
-    /// Foreign key referencing the Client who owns this policy.
+    /// Зовнішній ключ, що посилається на клієнта, який володіє цим полісом.
     /// </summary>
     public int ClientId { get; set; }
 
-    // !!! НОВЕ: ID агента, який продав поліс. Може бути null (якщо невідомо або продано напряму).
+    /// <summary>
+    /// Ідентифікатор агента, який продав поліс. Може бути null.
+    /// </summary>
     public int? AgentId { get; set; } 
 
     /// <summary>
-    /// The type of the insurance policy (e.g., Car, Medical).
+    /// Тип страхового поліса.
     /// </summary>
     public PolicyTypes PolicyType { get; set; }
 
     /// <summary>
-    /// The start date of the policy's validity period.
+    /// Дата початку дії поліса.
     /// </summary>
     public DateTime StartDate { get; set; }
 
     /// <summary>
-    /// The end date of the policy's validity period.
+    /// Дата завершення дії поліса.
     /// </summary>
     public DateTime EndDate { get; set; }
 
     /// <summary>
-    /// The maximum amount the insurance will cover.
+    /// Максимальна сума покриття, яку надає страховка.
     /// </summary>
     public decimal CoverageAmount { get; set; }
 
     /// <summary>
-    /// The cost (premium) of the policy, calculated by Business Logic.
+    /// Вартість (премія) поліса, розрахована Бізнес-логікою.
     /// </summary>
     public decimal Price { get; set; }
     
-    // ДОДАНО: Валюта поліса
     /// <summary>
-    /// The currency of the policy (e.g., UAH, USD).
+    /// Валюта поліса (наприклад, UAH, USD).
     /// </summary>
     public string Currency { get; set; } = "UAH";
 
     /// <summary>
-    /// The current status of the policy (e.g., Active, Completed, Cancelled).
+    /// Поточний статус поліса.
     /// </summary>
     public StatusTypes Status { get; set; } = StatusTypes.Active;
 }

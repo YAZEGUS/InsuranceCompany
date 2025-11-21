@@ -4,6 +4,9 @@ using Persistence;
 
 namespace BusinessLogic.Services;
 
+/// <summary>
+/// Реалізує інтерфейс IAnalyticsService. Містить бізнес-логіку для формування аналітичних звітів та статистики.
+/// </summary>
 public class AnalyticsService : IAnalyticsService
 {
     private readonly IRepository<Policy> _policyRepository;

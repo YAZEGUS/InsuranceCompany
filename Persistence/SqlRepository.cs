@@ -46,7 +46,7 @@ public class SqlRepository<T> : IRepository<T> where T : BaseEntity
         if (entity == null) return false;
         
         _dbSet.Remove(entity);
-        _context.SaveChanges();
+        _context.SaveChanges(); 
         return true;
     }
 }

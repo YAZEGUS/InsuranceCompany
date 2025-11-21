@@ -1,5 +1,3 @@
-using System;
-
 namespace Domain;
 
 /// <summary>
@@ -12,27 +10,27 @@ public enum PaymentType
 }
 
 /// <summary>
-/// Represents a payment transaction related to an insurance policy.
+/// Представляє платіжну транзакцію, пов'язану зі страховим полісом.
 /// </summary>
 public class Payment : BaseEntity
 {
     /// <summary>
-    /// Foreign key referencing the Policy this payment is associated with.
+    /// Зовнішній ключ, що посилається на Поліс, з яким пов'язаний цей платіж.
     /// </summary>
     public int PolicyId { get; set; }
 
     /// <summary>
-    /// The date the payment/transaction occurred.
+    /// Дата, коли відбувся платіж/транзакція.
     /// </summary>
     public DateTime Date { get; set; }
 
     /// <summary>
-    /// The amount of the transaction.
+    /// Сума транзакції.
     /// </summary>
     public decimal Amount { get; set; }
 
     /// <summary>
-    /// The type of the transaction (Contribution or Payout).
+    /// Тип транзакції (Contribution або Payout).
     /// </summary>
     public PaymentType Type { get; set; }
 }

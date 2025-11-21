@@ -1,13 +1,7 @@
-using BusinessLogic;
 using Domain;
 using Persistence;
-using System;
-using System.Linq; 
-using System.Collections.Generic;
 using BusinessLogic.Interfaces;
 using BusinessLogic.Services;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace ConsoleUI;
 
@@ -37,8 +31,6 @@ public static class Program
         var dbContext = new AppDbContext();
         HttpClient = new HttpClient(); 
         
-        // Ініціалізація Repositories (Persistence Layer)
-        // Використовуємо SqlRepository (Етап 5)
         IRepository<Client> clientRepository = new SqlRepository<Client>(dbContext);
         IRepository<Policy> policyRepository = new SqlRepository<Policy>(dbContext);
         IRepository<Claim> claimRepository = new SqlRepository<Claim>(dbContext);
@@ -54,9 +46,6 @@ public static class Program
         RequestService = new RequestService(requestRepository, policyRepository); 
         AnalyticsService = new AnalyticsService(policyRepository, claimRepository, AgentRepository);
         PaymentService = new PaymentService(paymentRepository, policyRepository, CurrencyRateService);
-        
-        // !!! Виконати міграцію або переконатися, що БД існує (важливо для EF Core)
-        // dbContext.Database.Migrate(); // Якщо використовуються міграції
     }
 
     /// <summary>
